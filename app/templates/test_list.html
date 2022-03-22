@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+<link rel="stylesheet" href="extensions/sticky-header/bootstrap-table-sticky-header.css">
+<script src="extensions/sticky-header/bootstrap-table-sticky-header.js"></script>
+
+{% block content %}
+
+<div class="row container-fluid mt-3">
+<div class="col-1"></div>
+<div class="col-10">
+  
+  <h1>List of completed tests and test campains</h1>
+  <div class="container-fluid mt-3" >
+    <table id="table" class="table table-hover"
+          data-toggle="table"
+          data-filter-control="true"
+          data-show-search-clear-button="true"
+          data-show-columns="true"
+          data-show-columns-toggle-all="true"
+          data-sortable="true"
+          data-pagination="true"
+           
+          >
+
+        <thead class="thead-light">
+          <tr>
+            <th data-field="columnA" data-filter-control="input">Campain</th>
+            <th data-field="columnB" data-filter-control="select">Name</th>
+            <th data-field="columnC" data-filter-control="input">Status</th>
+            <th data-field="columnD" data-filter-control="select">User</th>
+            <th>Test</th>
+            <th data-field="columnF" data-filter-control="input">Cell</th>
+            <th data-field="columnG" data-filter-control="select">Cell Type</th>
+            <th data-field="columnH" data-filter-control="select">Type 1</th>
+            <th data-field="columnI" data-filter-control="select">Type 2</th>
+            <th data-field="columnJ" data-filter-control="select">Device</th>
+            <th data-field="columnK" data-filter-control="input">Channel</th>
+            <th data-field="columnL" data-filter-control="select">Chamber</th>
+            <th data-field="columnM" data-filter-control="input">EIS</th>
+            <th data-field="columnN" data-filter-control="input">Temp</th>
+            <th data-field="columnO" data-filter-control="input">Start</th>
+            <th data-field="columnP" data-filter-control="input">End</th>
+
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i, campain in enumerate(campains) %}
+            {% for j, test in enumerate(campain.tests) %}
+                <tr >
+                <td>{{ i }}</td>
+                <td>{{ campain.name }}</td>
+                <td>
+                  {% if campain.status == True %} 
+                  <p class="text-warning">On-going</p>
+                  {% else %}
+                  <p class="text-muted">Completed</p>
+                  {% endif %}
+                </td>
+                <td>{{ campain.user }}</td>
+                <td>{{ j }}</td>
+                <td>{{ test.cell }}</td>
+                <td> Type </td>
+                <td>{{ test.type_1 }}</td>
+                <td>{{ test.type_2 }}</td>
+                <td>{{ test.device }}</td>
+                <td>{{ test.channel }}</td>
+                <td>{{ test.device2 }}</td>
+                <td>{{ test.device3 }}</td>
+                <td>{{ test.temp }}</td>
+                <td>{{ test.start }}</td>
+                <td>{{ test.end }}</td>
+                <td><a href="/download/{{ test.file  }}" class="text-primary">{{ test.file }}</a> </td>
+                </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+      <div class="row mt-5">
+        <div class="col-3"><button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalNewType"> Start Campain</button></div>
+      </div>
+
+
+</div>
+<div class="col-1"></div>
+</div>
+    
+
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/bootstrap-table@1.16.0/dist/bootstrap-table.min.js"></script>
+<script src="https://unpkg.com/bootstrap-table@1.16.0/dist/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
+
+
+{% endblock %}
+
+

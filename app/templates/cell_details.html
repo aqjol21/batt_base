@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block content %}
+<div class="row container-fluid mt-3">
+    <div class="col-1"></div>
+    <div class="col-10">
+        <h1>Cell: {{ cell_id }} details</h1>
+        <div class="row mt-3">
+            <div class="col-5 me-3">
+                <h2>Unit details</h2>
+                <table id="cell_details" class="table">
+                    <tbody >
+                            <tr>
+                            <td>Purchase date:</td> <td>{{ cell.purchase_date }}</td>
+                            </tr>
+                            <tr>
+                            <td>Under use? :</td> <td>{{ cell.under_use }}</td>
+                            </tr>
+                            <tr>
+                            <td>Last use:</td> <td>{{ cell.last_use }}</td>
+                            </tr>
+                    </tbody>
+                  </table>
+                <div class="divider" style="border-top: 2px solid #999;"></div>
+                <h2>Model details </h2> 
+                <table id="model_details" class="table">
+                    <tbody >
+                            <tr>
+                            <td>Cell type:</td> <td>{{ model.model }}</td>
+                            </tr>
+                            <tr>
+                            <td>Manufacturer:</td> <td>{{ model.maker }}</td>
+                            </tr>
+                            <tr>
+                            <td>Package:</td> <td>{{ model.package }}</td>
+                            </tr>
+                            <tr>
+                            <td>Capacity:</td> <td>{{ model.capacity }}</td>
+                            </tr>
+                            <tr>
+                            <td>Max DC current:</td> <td>{{ model.max_dc_current }}</td>
+                            </tr>
+                            <tr>
+                            <td>Max peak current:</td> <td>{{ model.max_peak_current }}</td>
+                            </tr>
+                            <tr>
+                            <td>Minimun voltage :</td> <td>{{ model.min_voltage }}</td>
+                            </tr>
+                            <tr>
+                            <td>Maximum voltage :</td> <td>{{ model.max_voltage }}</td>
+                            </tr>
+                            <tr>
+                            <td>Minimun temperature :</td> <td>{{ model.min_temperature }}</td>
+                            </tr>
+                            <tr>
+                            <td>Maximum temperature :</td> <td>{{ model.max_temperature }}</td>
+                            </tr>
+                            <tr>
+                            <td>Anode material:</td> <td>{{ model.anode }}</td>
+                            </tr>
+                            <tr>
+                            <td>Cathode material:</td> <td>{{ model.cathode }}</td>
+                            </tr>
+                            <tr>
+                            <td>Notes (if any):</td> <td>{{ model.note }}</td>
+                            </tr>
+                    </tbody>
+                  </table>
+
+
+            </div>
+            <div class="col-7 ms-4">
+                <h2>Cycling history</h2>
+
+                {% for _, campain in enumerate(campains) %}
+                    <h3>Campain {{ _ }}: {{ campain.name }}  </h3>
+                    <p>{{ campain.description }}</p>
+                    <div class="container-fluid" style = 'overflow-y:scroll; height:400px;'>
+                    <div class="row">
+                    {% for i, test in enumerate(tests[_]) %}
+                        <div class="card" style="width: 18rem;">
+                            <div class="card-body">
+                                <h5 class="card-title">Test # {{ i }} </h5>
+                                <h6 class="card-subtitle mb-2 text-muted"> {{ test.name }} </h6>
+                                <p class="card-text">
+                                <table id="history" class="table">
+                                    <tbody >
+                                        <tr><td>Description: </td> <td>{{ test.description }} </td></tr>
+                                        <tr><td>Started: </td> <td>{{ test.start }} </td></tr>
+                                        <tr><td>Ended: </td> <td>{{ test.end }} </td></tr>
+                                        <tr><td>By: </td> <td>{{ test.user }} </td></tr>
+                                        <tr><td>On: </td> <td>{{ test.channel_id }} </td></tr>
+                                    </tbody>
+                                </table>
+                                </p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                    </div>
+                    <div class="divider" style="border-top: 2px solid #999;"></div>
+                {% endfor %}
+                
+            </div>
+        </div>
+    </div>
+    <div class="col-1"></div>
+</div>
+
+
+
+{% endblock %}

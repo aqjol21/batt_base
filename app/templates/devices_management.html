@@ -1,14 +1,63 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 
-{% block app_content %}
-    <h1>Device management</h1>
-    <div class="row">
-        <div class="col-md-1"></div>
-        <div class="col-md-8">
-            <h2>Register an Equipement</h2>
-            {{ wtf.quick_form(form) }}
-        </div>
+{% block content %}
 
-    </div>
+  <div class="row container-fluid mt-3">
+    <div class="col-1"></div>
+    <div class="col-10">
+        <h1>Schedules management</h1>
+        
+      {% for device in data %}
+      <h3>{{ device['name'] }}</h3>
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered">
+          <thread>
+            <tr>
+              <th class="bg-primary" style="width: 10%"> Channel </th>
+              {% for i in range (device['maxWeek']) %}
+              <th >week {{ i+1 }}</th>
+              {% endfor %}
+            </tr>
+          </thread>
+          <tbody>
+            {% for c, channel in enumerate(device['channels']) %}
+            <tr class="accordion-toggle" >
+              <td class="bg-light" data-toggle="collapse" data-target="#collapse{{device['name']+'_'+str(c)+'_'+str(s)}}">{{ c }}</td>
+              {% for s, schedule in enumerate(channel) %}
+                {% if schedule['state'] == True %}
+                <td class="bg-success" colspan="{{ schedule['len'] }}" onclick= "window.location.href='{{ url_for( 'book_device' ,data = urlencode({ 'device':device['name'], 'channel':c })) }}';" style="cursor: pointer;" > Free  </td>
+                {% elif s == 0%}
+                <td class="bg-danger" colspan="{{ schedule['len'] }}" data-toggle="collapse" data-target="#{{device['name']+'_'+str(c)+'_'+str(s)}}" style="cursor: pointer;"> {{ schedule['test_type'] }}
+                  <div id="{{device['name']+'_'+str(c)+'_'+str(s)}}" class="collapse in">
+                    On-going test:  {{ schedule['test_name'] }}</br>
+                    Type of test : {{ schedule['test_type'] }}</br>
+                    Started by : {{ schedule['user'] }}</br>
+                    <a class="btn btn-secondary" href="{{ url_for( 'endMesure_get' ,data = urlencode({ 'device':device['name'], 'channel':c, 'test':schedule['test_id'] }) ) }}" class="text-dark">Terminate</a>
+                  </div>
+                </td>
+                {% else %}
+                <td class="bg-warning" colspan="{{ schedule['len'] }}" data-toggle="collapse" data-target="#{{device['name']+'_'+str(c)+'_'+str(s)}}" style="cursor: pointer;"> {{ schedule['test_type'] }}
+                  <div id="{{device['name']+'_'+str(c)+'_'+str(s)}}" class="collapse in">
+                    On-going test:  {{ schedule['test_name'] }}</br>
+                    Type of test : {{ schedule['test_type'] }}</br>
+                    Started by : {{ schedule['user'] }}</br>
+                    <a class="btn btn-secondary" href="{{ url_for( 'endMesure_get' ,data = urlencode({ 'device':device['name'], 'channel':c, 'test':schedule['test_id'] }) ) }}" class="text-dark">Terminate</a>
+                  </div>
+                </td>
+                {% endif %}
+              {% endfor %}
+            </tr>
+
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endfor %} 
+
+
+      </div>
+      <div class="col-1"></div>
+  </div>
+
 {% endblock %}

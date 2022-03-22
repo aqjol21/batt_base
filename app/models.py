@@ -94,7 +94,7 @@ class Cell_type(db.Model):
     max_voltage        = db.Column(db.Float)
     min_temperature    = db.Column(db.Float)
     max_temperature    = db.Column(db.Float)
-    note               = db.column(db.String(256))
+    note               = db.Column(db.String(256))
 
 
 class Cell(db.Model):
@@ -102,6 +102,7 @@ class Cell(db.Model):
     id            = db.Column(db.Integer,primary_key=True)
     model_id      = db.Column(db.Integer, db.ForeignKey('cell_type.id'))
     purchase_date = db.Column(db.DateTime(timezone=True))
+    under_use     = db.Column(db.Boolean)
 
 class Channel(db.Model):
     __tablename__ = 'channel'
@@ -120,13 +121,28 @@ class Device(db.Model):
     # specifications?
 
 
-class Measurement(db.Model):
+class Test(db.Model):
     __tablename__ = 'measurement'
     id            = db.Column(db.Integer,primary_key=True)
-    name          = db.Column(db.String(64),index=True,unique=True)
+    name          = db.Column(db.String(64),index=True)
     description   = db.Column(db.String(512))
-    start_data    = db.Column(db.DateTime(timezone=True))
-    end_date      = db.Column(db.DateTime(timezone=True))
-    data          = db.Column(db.DateTime(timezone=True))
-    user_id       = db.Column(db.Integer, db.ForeignKey('user.id'))
-    channel_id    = db.Column(db.Integer, db.ForeignKey('channel.id'))
+    type_2        = db.Column(db.Integer)
+    type_1        = db.Column(db.Integer)
+    start         = db.Column(db.DateTime(timezone=True))
+    end           = db.Column(db.DateTime(timezone=True))
+    temp          = db.Column(db.Float)
+    file          = db.Column(db.String(64))
+    channel       = db.Column(db.Integer, db.ForeignKey('channel.id'))
+    device        = db.Column(db.Integer, db.ForeignKey('device.id'))
+    device2       = db.Column(db.Integer, db.ForeignKey('device.id'))
+    device3       = db.Column(db.Integer, db.ForeignKey('device.id'))
+    cell          = db.Column(db.Integer, db.ForeignKey('cell.id'))
+    user          = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+
+
+class Campain(db.Model):
+    __tablename__ = 'campain'
+    id            = db.Column(db.Integer,primary_key=True)
+    name          = db.Column(db.String(64),index=True)
+    description   = db.Column(db.String(512))

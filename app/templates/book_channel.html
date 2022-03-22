@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block content %}
+
+
+<div class="row container-fluid mt-3">
+    <div class="col-1"></div>
+    <div class="col-10">
+        <h1>Test Booking</h1>
+        {% if data['device'] != None%}
+            {% for d, device in enumerate(data['device']) %}
+                Device selected: {{device}} </br>
+       
+                {% if data['channel'][d] != None %}
+                    {% for channel in data['channel'][d] %}
+                         Channel {{ channel }} selected </br>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+    </div>
+    <div class="col-1"></div>
+</div>
+
+{% endblock %}

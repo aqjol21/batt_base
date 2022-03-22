@@ -6,6 +6,8 @@ from wtforms.widgets import TextArea
 from wtforms.validators import DataRequired, Email, ValidationError, EqualTo
 from wtforms import validators
 from flask import url_for
+# from wtforms.fields.html5 import DateField
+
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -30,8 +32,9 @@ class CellTypeForm(FlaskForm):
     submit   = SubmitField('Add new type')
 
 class CellForm(FlaskForm):
-    model         =  SelectField("cell model", coerce=int, validators=[DataRequired()])
-    purchase_date =  DateField("Purchase date",validators=[DataRequired()])
+    model         = SelectField("cell model", coerce=int, validators=[DataRequired()])
+    purchase_date = DateField("Purchase date",validators=[DataRequired()])
+    id            = IntegerField("Cell id (from sticker)", validators=[DataRequired()])
     submit        = SubmitField('Add cell')
 
 class DeviceForm(FlaskForm):
@@ -45,8 +48,15 @@ class StartMeasureForm(FlaskForm):
     description   = TextAreaField('Comments')
     start_data    = DateField("Start date",validators=[DataRequired()])
     end_date      = DateField("Projected end date")
+    device_id     = SelectField("Select device", coerce=int, validators=[DataRequired()])
     channel_id    = SelectField("Select channel", coerce=int, validators=[DataRequired()])
+
     submit        = SubmitField('start cell')
 
 class EndMeasureForm(FlaskForm):
     submit        = SubmitField('start cell')
+
+class displayScheduleControl(FlaskForm):
+    time_res      = SelectField( choices=[('0','day'),('1','week'),('2','month')])
+    submit        = SubmitField('Change')
+

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block content %}
+
+
+<div class="row container-fluid mt-3">
+    <div class="col-1"></div>
+    <div class="col-10">
+        <h1>Test</h1>
+
+        <h2>Variables</h2>
+        {% if variables != None %}
+        {{ variables }}
+
+        {% else %}
+        Empty data
+        {% endif %}
+        <h2>dictionary</h2>
+        {{ dic }}
+        <h2>Send data</h2> 
+        <a href="{{ url_for('test', data = urlencode(dic)) }}">Test send</a>
+        
+    </div>
+    <div class="col-1"></div>
+</div>
+
+{% endblock %}

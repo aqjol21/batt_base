@@ -1,17 +1,121 @@
 {% extends "base.html" %}
-{% import 'bootstrap/wtf.html' as wtf %}
+{% import "bootstrap/wtf.html" as wtf %}
 
-{% block app_content %}
-    <h1>Cell management</h1>
-    <div class="row">
-        <div class="col-md-1"></div>
-        <div class="col-md-4  border-right">
-            <h2>Register a Cell type</h2>
-            {{ wtf.quick_form(forms['type']) }}
+
+{% block content %}
+<div class="row container-fluid mt-3">
+    <div class="col-1"></div>
+    <div class="col-10">
+        <h1>Cell management</h1>
+
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3>Cells under use</h3>
+                <div style = 'overflow-y:scroll;height:300px;'>
+                <table id="usedCell" class="table table-hover">
+                    <thead class="thead-light" >
+                      <tr>
+                        <th>Cell id</th>
+                        <th>Model</th>
+                        <th>Device</th>
+                        <th>User</th>
+                        <th>End date</th> 
+                      </tr>
+                    </thead>
+                    <tbody >
+                            {% for cell in cells %}
+                            <tr class="clickable " onclick="window.location='/cell_details{{ cell.id }}'">
+                            <td>{{ cell.id }}</td>
+                            <td>{{ cell.type }}</td>
+                            <td>{{ cell.device }}</td>
+                            <td>{{ cell.user }}</td>
+                            <td>{{ cell.end }}</td>
+                            </tr>
+                            {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+            </div>
+            
+
         </div>
-        <div class="col-md-4">
-            <h2>Register a cell</h2>
-            {{ wtf.quick_form(forms['unit']) }}
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3>Cells available</h3>
+            <div style = 'overflow-y:scroll;height:300px;'>
+                <table id="freeCell" class="table table-hover">
+                    <thead class="thead-light" >
+                        <tr>
+                        <th>Cell id</th>
+                        <th>Model</th>
+                        <th>Last use</th>
+                        <th>Location</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        {% for cell in cells %}
+                        <tr class="clickable " onclick="window.location='/cell_details{{ cell.id }}'">
+                        <td>{{ cell.id }}</td>
+                        <td>{{ cell.type }}</td>
+                        <td>{{ cell.last }}</td>
+                        <td>{{ cell.location }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                  </table>
+            </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-3"><buton type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalNewType"> Register new cell type</button></div>
+            <div class="col-3"></div>
+            <div class="col-3"><button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalNewCell"> Add new cells</button></div>
         </div>
     </div>
+    <div class="col-1"></div>
+</div>
+
+
+
+
+
+
+
+<div class="modal fade" id="modalNewType" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Register a Cell type</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="p-2 row justify-content-center pt-5 smooth-scroll">
+                    {{ wtf.quick_form(forms['type'] , form_type="vertical") }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNewCell" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Register a Cell type</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="p-2 row justify-content-center pt-5 smooth-scroll">
+                    {{ wtf.quick_form(forms['unit'] , form_type="vertical") }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
