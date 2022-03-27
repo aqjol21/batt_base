@@ -1,0 +1,2 @@
+FLASK_APP=batt_base.py
+FLASK_ENV=development
