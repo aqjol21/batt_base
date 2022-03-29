@@ -4,9 +4,15 @@ from app import app,  db#,login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 
+
+test_cell_identifier=db.Table('test_cell_identifier', db.Model.metadata,
+    db.Column('cell_id', db.Integer, db.ForeignKey('cell.id')),
+    db.Column('test_id', db.Integer, db.ForeignKey('test.id'))
+)
+
+
 class User(db.Model):
     """Defintion of the users' table in the database
-
     Attributes
     ----------
     id : String64
@@ -30,13 +36,15 @@ class User(db.Model):
     id             =  db.Column(db.Integer,primary_key=True)
     username       = db.Column(db.String(64),index=True,unique=True)
     password_hash  = db.Column(db.String(64))
+
+    test_id      = db.relationship('Test', backref='user',lazy='dynamic',foreign_keys="Test.user_id")
     
     def __repr__(self):
-        return '<User {}>'.format(self.username) 
+        return '{}'.format(self.username) 
 
-    def __init__(self, username, password_hash):
-        self.username        = username
-        self.password_hash   = password_hash    
+    # def __init__(self, username, password_hash):
+    #     self.username        = username
+    #     self.password_hash   = password_hash    
 
     def set_passwd(self,password):
         self.password_hash=generate_password_hash(password)
@@ -46,8 +54,7 @@ class User(db.Model):
 
 
 class Cell_type(db.Model):
-    """Defintion of the table in the database contiqning qll the models of the cells
-
+    """Defintion of the table in the database contiqning all the models of the cells
     Attributes
     ----------
     id : String64
@@ -95,14 +102,22 @@ class Cell_type(db.Model):
     min_temperature    = db.Column(db.Float)
     max_temperature    = db.Column(db.Float)
     note               = db.Column(db.String(256))
-
+    
+    model_id           = db.relationship('Cell', backref='cell_type',lazy='dynamic',foreign_keys="Cell.model_id")
+    def __repr__(self):
+        return '{}'.format(self.maker)  + " " +'{}'.format(self.model)
 
 class Cell(db.Model):
     __tablename__ = 'cell'
     id            = db.Column(db.Integer,primary_key=True)
+    name          = db.Column(db.String(64),unique=True)
     model_id      = db.Column(db.Integer, db.ForeignKey('cell_type.id'))
     purchase_date = db.Column(db.DateTime(timezone=True))
     under_use     = db.Column(db.Boolean)
+
+    def __repr__(self):
+        return '{}'.format(self.name)  
+    
 
 class Channel(db.Model):
     __tablename__ = 'channel'
@@ -110,6 +125,9 @@ class Channel(db.Model):
     chan_number   = db.Column(db.Integer)
     status        = db.Column(db.Integer)
     device_id     = db.Column(db.Integer, db.ForeignKey('device.id'))
+
+    def __repr__(self):
+        return '{}'.format(self.chan_number) 
     
 
 class Device(db.Model):
@@ -118,31 +136,85 @@ class Device(db.Model):
     name            = db.Column(db.String(64),index=True,unique=True)
     number_channels = db.Column(db.Integer)
     company         = db.Column(db.String(64))
-    # specifications?
+    datasheet_link  = db.Column(db.String(64))
+    details         = db.Column(db.String(64))
+    channel_id      = db.relationship('Channel', backref='device_channel',lazy='dynamic',foreign_keys="Channel.device_id")
+    # test_id         = db.relationship('Test', backref='device1',lazy='dynamic',foreign_keys="Test.device_id")
+    test2_id        = db.relationship('Test', backref='device2',lazy='dynamic',foreign_keys="Test.device2_id")
+    test3_id        = db.relationship('Test', backref='device3',lazy='dynamic',foreign_keys="Test.device3_id")
+    
+    def __repr__(self):
+        return '{}'.format(self.name)  
+
 
 
 class Test(db.Model):
-    __tablename__ = 'measurement'
+    __tablename__ = 'test'
     id            = db.Column(db.Integer,primary_key=True)
-    name          = db.Column(db.String(64),index=True)
-    description   = db.Column(db.String(512))
-    type_2        = db.Column(db.Integer)
-    type_1        = db.Column(db.Integer)
+    name          = db.Column(db.String(64))
+    project       = db.Column(db.Integer, db.ForeignKey('project.id'))
+    description   = db.Column(db.String(512))    
     start         = db.Column(db.DateTime(timezone=True))
     end           = db.Column(db.DateTime(timezone=True))
     temp          = db.Column(db.Float)
-    file          = db.Column(db.String(64))
-    channel       = db.Column(db.Integer, db.ForeignKey('channel.id'))
-    device        = db.Column(db.Integer, db.ForeignKey('device.id'))
-    device2       = db.Column(db.Integer, db.ForeignKey('device.id'))
-    device3       = db.Column(db.Integer, db.ForeignKey('device.id'))
-    cell          = db.Column(db.Integer, db.ForeignKey('cell.id'))
-    user          = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
+    # channel_id    = db.Column(db.Integer, db.ForeignKey('channel.id'))
+    # device_id     = db.Column(db.Integer, db.ForeignKey('device.id'))
+    device2_id    = db.Column(db.Integer, db.ForeignKey('device.id'))
+    device3_id    = db.Column(db.Integer, db.ForeignKey('device.id'))
+    user_id       = db.Column(db.Integer, db.ForeignKey('user.id'))
+    campaign_id   = db.Column(db.Integer, db.ForeignKey('campaign.id'))
+    type_2        = db.Column(db.Integer, db.ForeignKey('test_type.id'))
+    type_1        = db.Column(db.Integer, db.ForeignKey('test_type.id'))
+    
+    singleTests   = db.relationship('SingleTest', backref='batch_list',lazy='dynamic',foreign_keys="SingleTest.test_id")
+    
+    def __repr__(self):
+        return '{}'.format(self.name) 
+    
 
+class SingleTest(db.Model):
+    __tablename__  = 'singletest'
+    id             = db.Column(db.Integer,primary_key=True)
+    device_id      = db.Column(db.Integer, db.ForeignKey('device.id'))
+    channel_id     = db.Column(db.Integer, db.ForeignKey('channel.id'))
+    cell_id        = db.Column(db.Integer, db.ForeignKey('cell.id'))
+    test_id        = db.Column(db.Integer, db.ForeignKey('test.id'))
+    cycler_file    = db.Column(db.String(64))
+    prototype_file = db.Column(db.String(64))
+    def __repr__(self):
+            return 'Batsch {}'.format(self.id) 
 
-
-class Campain(db.Model):
-    __tablename__ = 'campain'
+class Campaign(db.Model):
+    __tablename__ = 'campaign'
     id            = db.Column(db.Integer,primary_key=True)
     name          = db.Column(db.String(64),index=True)
     description   = db.Column(db.String(512))
+    
+    campaign_id      = db.relationship('Test', backref='test_campaign',lazy='dynamic',foreign_keys="Test.campaign_id")
+    
+    
+    def __repr__(self):
+        return '{}'.format(self.name) 
+
+class Test_type(db.Model):
+    __tablename__ = 'test_type'
+    id            = db.Column(db.Integer,primary_key=True)
+    name          = db.Column(db.String(64),index=True)
+    type1_id      = db.relationship('Test', backref='test_type1',lazy='dynamic',foreign_keys="Test.type_1")
+    type2_id      = db.relationship('Test', backref='test_type2',lazy='dynamic',foreign_keys="Test.type_2")
+
+    def __repr__(self):
+        return '{}'.format(self.name) 
+
+
+class Project(db.Model):
+    __tablename__ = 'project'
+    id            = db.Column(db.Integer,primary_key=True)
+    name          = db.Column(db.String(64),index=True,unique=True)
+    singleTests_i = db.relationship('Test', backref='project_id',lazy='dynamic',foreign_keys="Test.project")
+
+    def __repr__(self):
+        return '{}'.format(self.name)  
+
+db.create_all()

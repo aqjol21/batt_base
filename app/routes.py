@@ -1,5 +1,11 @@
 from flask import render_template,url_for, redirect,  send_file
-from app import app
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
+
+from sqlalchemy import inspect
+
+from app import app, db
+from app.models import User, Cell_type, Cell, Channel, Device, Test, Campaign, Test_type, Project, SingleTest
 
 from os import getcwd, path
 from urllib.parse import urlencode, parse_qs
@@ -105,7 +111,29 @@ def book_device(data=None):
         data = parse_qs(data)
     else:
         data = None
-    return render_template('book_channel.html', data = data)
+    form = StartMeasureForm()
+    return render_template('book_channel.html', data = data, form = form)
+
+#============Admin==============================================
+
+
+
+class ChildView(ModelView):
+    column_display_pk = True # optional, but I like to see the IDs in the list
+    column_hide_backrefs = False
+    column_list = [c_attr.key for c_attr in inspect(Test).mapper.column_attrs]
+
+admin = Admin(app, name='Dashboard')  
+admin.add_view(ModelView(User, db.session))
+admin.add_view(ModelView(Project, db.session))
+admin.add_view(ModelView(Cell_type, db.session))
+admin.add_view(ModelView(Cell, db.session))
+admin.add_view(ModelView(Channel, db.session))
+admin.add_view(ModelView(Device, db.session))
+admin.add_view(ModelView(Test_type, db.session))
+admin.add_view(ModelView(SingleTest, db.session))
+admin.add_view(ModelView(Test, db.session))
+admin.add_view(ModelView(Campaign, db.session))
 
 
 #============Test===============================================

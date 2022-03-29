@@ -41,6 +41,8 @@
             <th data-field="columnN" data-filter-control="input">Temp</th>
             <th data-field="columnO" data-filter-control="input">Start</th>
             <th data-field="columnP" data-filter-control="input">End</th>
+            <th>Cycler file</th>
+            <th>CMS file</th>
 
             <th></th>
           </tr>
@@ -71,6 +73,7 @@
                 <td>{{ test.temp }}</td>
                 <td>{{ test.start }}</td>
                 <td>{{ test.end }}</td>
+                <td><a href="/download/{{ test.file  }}" class="text-primary">{{ test.file }}</a> </td>
                 <td><a href="/download/{{ test.file  }}" class="text-primary">{{ test.file }}</a> </td>
                 </tr>
             {% endfor %}
