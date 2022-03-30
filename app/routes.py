@@ -13,7 +13,7 @@ from urllib.parse import urlencode, parse_qs
 from app.forms import CellTypeForm,CellForm,DeviceForm,StartMeasureForm,EndMeasureForm, displayScheduleControl
 
 ###### DESIGN & DEBUG #########
-from app.fakeData import device, campain, cell, schedule
+from app.fakeData import campain, cell, schedule
 ##############################
 
 @app.context_processor
@@ -32,8 +32,31 @@ def inject_urlencode():
 @app.route('/')
 @app.route('/index')
 def index():    
-    devices = device.getDevices()
-    return render_template('index.html', title='Home', devices = devices)
+    devices= Device.query.all()
+    devices_ = []
+    for device in devices:
+        device_ = {}
+        device_['name'] = device.name
+        channels = Channel.query.filter_by(device_id=device.id).all()
+        channels_ = []
+        for channel in channels:
+            channel_ = {}
+            channel_ ['status']=channel.status
+            if channel.status == True:
+                current_tests = Test.query.filter_by(active=True).all()
+                for test in current_tests:
+                    singletests = SingleTest.query.filter_by(test_id=test.id).all()
+                    for singletest in singletests:
+                        if singletest != None:
+                            the_test = test
+                            channel_['user'] = User.query.filter_by(id=the_test.user_id).first().username 
+                            break
+            channels_.append(channel_)
+        device_['channels']=channels_
+        device_['utilization']= sum(1 for d in device_['channels'] if d.get('status') == True)/len(device_['channels'])*100
+        devices_.append(device_)
+
+    return render_template('index.html', title='Home', devices = devices_)
 
 #============TEST===============================================
 @app.route('/tests_list', methods=['GET'])

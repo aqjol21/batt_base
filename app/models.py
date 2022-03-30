@@ -133,11 +133,13 @@ class Channel(db.Model):
     __tablename__ = 'channel'
     id            = db.Column(db.Integer,primary_key=True)
     chan_number   = db.Column(db.Integer)
-    status        = db.Column(db.Integer)
+    status        = db.Column(db.Boolean)
     device_id     = db.Column(db.Integer, db.ForeignKey('device.id'))
 
+    single_test_id = db.relationship('SingleTest', backref='channel_test',lazy='dynamic',foreign_keys="SingleTest.channel_id")
+
     def __repr__(self):
-        return '{}'.format(self.chan_number) 
+        return 'channel :{}'.format(self.chan_number)  +' device: {}'.format(self.device_id)
     
 
 class Device(db.Model):
@@ -148,12 +150,10 @@ class Device(db.Model):
     company         = db.Column(db.String(64))
     datasheet_link  = db.Column(db.String(64))
     details         = db.Column(db.String(64))
-    # type            = db.Column(db.Integer, db.ForeignKey('device_type.id'))
+
     type            = db.relationship("Device_type", secondary=device_type_identifier)
     channel_id      = db.relationship('Channel', backref='device_channel',lazy='dynamic',foreign_keys="Channel.device_id")
-    # test2_id        = db.relationship('Test', backref='device2',lazy='dynamic',foreign_keys="Test.device2_id")
-    # test3_id        = db.relationship('Test', backref='device3',lazy='dynamic',foreign_keys="Test.device3_id")
-    
+
     def __repr__(self):
         return '{}'.format(self.name)  
 
@@ -163,19 +163,18 @@ class Test(db.Model):
     __tablename__ = 'test'
     id            = db.Column(db.Integer,primary_key=True)
     name          = db.Column(db.String(64))
-    project       = db.Column(db.Integer, db.ForeignKey('project.id'))
+    
     description   = db.Column(db.String(512))    
     start         = db.Column(db.DateTime(timezone=True))
     end           = db.Column(db.DateTime(timezone=True))
     temp          = db.Column(db.Float)
-    
+    active        = db.Column(db.Boolean)
 
-    device2_id    = db.Column(db.Integer, db.ForeignKey('device.id'))
-    device3_id    = db.Column(db.Integer, db.ForeignKey('device.id'))
     user_id       = db.Column(db.Integer, db.ForeignKey('user.id'))
     campaign_id   = db.Column(db.Integer, db.ForeignKey('campaign.id'))
     type_2        = db.Column(db.Integer, db.ForeignKey('test_type.id'))
     type_1        = db.Column(db.Integer, db.ForeignKey('test_type.id'))
+
     devices       = db.relationship("Device", secondary=device_enaged_identifier)
     singleTests   = db.relationship('SingleTest', backref='batch_list',lazy='dynamic',foreign_keys="SingleTest.test_id")
     
@@ -186,12 +185,13 @@ class Test(db.Model):
 class SingleTest(db.Model):
     __tablename__  = 'singletest'
     id             = db.Column(db.Integer,primary_key=True)
-    device_id      = db.Column(db.Integer, db.ForeignKey('device.id'))
+    # device_id      = db.Column(db.Integer, db.ForeignKey('device.id'))
     channel_id     = db.Column(db.Integer, db.ForeignKey('channel.id'))
     cell_id        = db.Column(db.Integer, db.ForeignKey('cell.id'))
     test_id        = db.Column(db.Integer, db.ForeignKey('test.id'))
     cycler_file    = db.Column(db.String(64))
     prototype_file = db.Column(db.String(64))
+
     def __repr__(self):
             return 'Batch {}'.format(self.id) 
 
@@ -200,6 +200,7 @@ class Campaign(db.Model):
     id            = db.Column(db.Integer,primary_key=True)
     name          = db.Column(db.String(64),index=True)
     description   = db.Column(db.String(512))
+    project       = db.Column(db.Integer, db.ForeignKey('project.id'))
     
     campaign_id      = db.relationship('Test', backref='test_campaign',lazy='dynamic',foreign_keys="Test.campaign_id")
     
@@ -229,8 +230,10 @@ class Project(db.Model):
     __tablename__ = 'project'
     id            = db.Column(db.Integer,primary_key=True)
     name          = db.Column(db.String(64),index=True,unique=True)
-    singleTests_i = db.relationship('Test', backref='project_id',lazy='dynamic',foreign_keys="Test.project")
+    partners      = db.Column(db.String(512))
+    description   = db.Column(db.String(512))
 
+    singleTests_i = db.relationship('Campaign', backref='project_id',lazy='dynamic',foreign_keys="Campaign.project")
     def __repr__(self):
         return '{}'.format(self.name)  
 

@@ -32,18 +32,16 @@ def db_init():
         types = device[5:]
         
         for type_ in types:
-            print(type_)
             type__ = Device_type.query.filter_by(name=type_).first()
             if type__ != None:
                 dev.type.append(type__)
         db.session.add(dev)
         db.session.commit()
-        print("added ", device)
 
     devices = Device.query.all()
     for device in tqdm(devices, desc="Filling channel table"):
         for channel in range(device.number_channels):
-            chan = Channel(chan_number = channel, status=True, device_id=device.id)
+            chan = Channel(chan_number = channel, status=False, device_id=device.id)
             db.session.add(chan)
             db.session.commit()
     
@@ -80,7 +78,7 @@ def db_init():
              ["SA02","SA03","SA01","SA04","SA05","SA06"]]
     for i, type in enumerate(tqdm(cell_types, desc="Filling cells units")):
         for cell in cells[i]:
-            ce = Cell(model_id=type.id, name=cell,purchase_date=randomdate(2022,random.randint(1,12)),under_use=random.choice([True, False]) )
+            ce = Cell(model_id=type.id, name=cell,purchase_date=randomdate(2021,random.randint(1,12)),under_use=False) 
             db.session.add(ce)
             db.session.commit()
     
@@ -100,7 +98,7 @@ def db_init():
     types1      = ["cycling","characterization","characterization","characterization","performance","characterization","performance","cycling"]
     types2      = [None,"EIS","EIS","EIS",None,"EIS","EIS",None]
     chambers    = ["ACS-DM1200T","ACS-DM340C","ACS-DM1200T","","ACS-DM1200T","ACS-DM1200T","ESPEC-ARU1100","ESPEC-ARU1100"]
-    eis         = ["","","","","","", 'Regatron TC.GSS.20.600.400.S', "Regatron TC.GSS.20.600.400.S"]
+    eiss        = ["","","","","","", 'Regatron TC.GSS.20.600.400.S', "Regatron TC.GSS.20.600.400.S"]
 
     cells     = [[ "L03", "L26", "L17","L16","L20","L34","L38","L29","L39","L31","L27"],
                 [ "KOK05","KOK02","KOK13"],
@@ -116,62 +114,94 @@ def db_init():
                 ["0032_ocv_mapping_kok_3ch_160222","0032_ocv_mapping_kok_3ch_160222","0032_ocv_mapping_kok_3ch_160222"],
                 ["0016_ct_lecNMC_SoC-T","0016_ct_lecNMC_SoC-T","0016_ct_lecNMC_SoC-T"],
                 ["0025_1_4_spartacus_ct","0025_1_4_spartacus_ct","0025_1_4_spartacus_ct","0025_1_4_spartacus_ct","0025_1_4_spartacus_ct","0025_1_4_spartacus_ct","0025_1_4_spartacus_ct","0025_1_4_spartacus_ct","0025_1_4_spartacus_ct","0025_1_4_spartacus_ct"],
-                ["0008_sa_2ch_090219","0008_sa_2ch_090219","0008_sa_4ch_090219","0008_lg_4ch_090219","0008_lg_2ch_090219","0008_lg_2ch_090219"],
-                ["0007_ct_0_sa_090219","0007_ct_0_sa_090219","0007_ct_0_lg_080219","0007_ct_0_lg_080219","0007_ct_0_lg_080219","0007_ct_0_sa_090219"],
+                ["0008_sa_2ch_090219","0008_sa_2ch_090219","0008_sa_4ch_090219"],
+                ["0008_lg_4ch_090219","0008_lg_2ch_090219","0008_lg_2ch_090219"],
+                ["0007_ct_0_sa_090219","0007_ct_0_sa_090219","0007_ct_0_lg_080219"],
+                ["0007_ct_0_lg_080219","0007_ct_0_lg_080219","0007_ct_0_sa_090219"],
                 ["grandma_apple_pie","grandma_apple_pie"],
                 ["grandpa_ice_cream"]]
     devices    = [["BCS-D", "BCS-D","BCS-C","BCS-B","BCS-A","BCS-A","BCS-A","BCS-B","BCS-B","BCS-C","BCS-C"],
                 ["BCS-D","BCS-D","BCS-B"],
                 ["BCS-A","BCS-C","BCS-D"],
                 ["BCS-C","BCS-C","BCS-C","BCS-C","BCS-C","BCS-C","BCS-D","BCS-D","BCS-A","BCS-A"],
-                ["BCS-B","BCS-A","BCS-B","BCS-C","BCS-C","BCS-A"],
-                ["BCS-A","BCS-A","BCS-B","BCS-C","BCS-C","BCS-B"],
+                ["BCS-B","BCS-A","BCS-B"],
+                ["BCS-C","BCS-C","BCS-A"],
+                ["BCS-A","BCS-A","BCS-B"],
+                ["BCS-C","BCS-C","BCS-B"],
                 ["Arbin LBT21044HC","Arbin LBT21044HC"],
                 ["ITECH IT900"]]
     channels   = [[1,2,3,3,3,1,2,1,2,1,2],
                     [6,7,6],
                     [1,1,5],
                     [3,4,5,6,7,8,1,2,7,8],
-                    [5,3,1,1,5,1],
-                    [7,8,7,7,8,8],
+                    [5,3,1],
+                    [1,5,1],
+                    [7,8,7],
+                    [7,8,8],
                     [1,9],
                     [1]]
     
 
     for i, campaign in enumerate(tqdm(campaigns, desc="Filling tests table")):
-        for _ , test in enumerate(tqdm(tests[i],desc="Creating tests for campaign "+str(i))):  
+    # for i, campaign in enumerate(campaigns):
+        campaign.project =Project.query.filter_by(name=projects[i]).first().id
+        db.session.commit()
+        for _ , test in enumerate(tqdm(tests[i],desc="Creating tests for campaign "+str(i))): 
+        # for _ , test in enumerate(tests[i]):  
             
             author = User.query.filter_by(username=authors[i]).first()
-            pr     = Project.query.filter_by(name=projects[i]).first()
+            
             start  = datetime.datetime.strptime(starts[i],"%m/%d/%Y")
             type1  = Test_type.query.filter_by(name=types1[i]).first()
             test   = Test(name=test,
                             campaign_id=campaign.id, 
                             user_id=author.id, 
-                            project = pr.id, 
                             start=start,
-                            type_1=type1.id )
+                            type_1=type1.id)
 
             if temps[i]  != None: test.temp = temps[i]
-            if ends[i]   != None: test.end = datetime.datetime.strptime(ends[i],"%m/%d/%Y")
+            if ends[i]   != None: 
+                test.end = datetime.datetime.strptime(ends[i],"%m/%d/%Y")
+                if test.end > datetime.datetime.today():
+                    test.active = True
+                else:
+                    test.active = False
             if types2[i] != None: test.type_2 =  Test_type.query.filter_by(name=types2[i]).first().id
-            
             
 
             db.session.add(test)
             db.session.commit()
 
-            if chambers[i] != "": test.devices.append(Device.query.filter_by(name=chambers[i]).first())
-            if eis[i] != "": test.devices.append(Device.query.filter_by(name=eis[i]).first())
+            if chambers[i] != "": 
+                chamber        = Device.query.filter_by(name=chambers[i]).first() 
+                channel        = Channel.query.filter_by(device_id=chamber.id).first()
+                channel.status = True
+                test.devices.append(chamber)
+
+            if eiss[i] != "": 
+                eis            = Device.query.filter_by(name=eiss[i]).first()
+                channel        = Channel.query.filter_by(device_id=eis.id).first()
+                channel.status = True
+                test.devices.append(eis)
+
 
             
             for __, cell in enumerate(tqdm(cells[i], desc="Adding batches to test "+str(_))):
-                cell_           = Cell.query.filter_by(name=cell).first()
-                device         = Device.query.filter_by(name=devices[i][_]).first()
-                channel        = Channel.query.filter_by(device_id=device.id).filter_by(chan_number=channels[i][_]-1).first()                
-                cycler_file    = filesnames[i][_]+".csv"
-                prototype_file = filesnames[i][_]+"_cms.csv"
-                element        = SingleTest(device_id=device.id,channel_id=channel.id,cell_id=cell_.id,test_id=test.id,cycler_file=cycler_file,prototype_file=prototype_file)
+            # for __, cell in enumerate(cells[i]):
+                cell_          = Cell.query.filter_by(name=cell).first()
+                device         = Device.query.filter_by(name=devices[i][__]).first()
+                channel        = Channel.query.filter_by(device_id=device.id).filter_by(chan_number=channels[i][__]-1).first() 
+                # print(campaign, test,  channel, device, cell, channels[i][__]-1 )
+                if test.end != None:
+                    if datetime.datetime.today() < test.end:
+                        channel.status = False
+                        cell_.under_use = False
+                else: 
+                    channel.status = True   
+                    cell_.under_use = True   
+                cycler_file    = filesnames[i][__]+".csv"
+                prototype_file = filesnames[i][__]+"_cms.csv"
+                element        = SingleTest(channel_id=channel.id,cell_id=cell_.id,test_id=test.id,cycler_file=cycler_file,prototype_file=prototype_file)
                 db.session.add(element)
                 db.session.commit()
        

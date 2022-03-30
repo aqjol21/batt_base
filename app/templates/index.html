@@ -32,9 +32,9 @@
                                 
 
                                 <div class ="row">
-                                    {% if device.channels[i]["State"] == True %}
+                                    {% if device.channels[i]["status"] == True %}
                                         <div class="col-6 mx-auto"><span class="badge badge-pill badge-danger">Under use</span></div>
-                                        <div class="col-6 mx-auto"><span class="badge badge-pill badge-info">{{ device.channels[i]["User"]}}</span></div>
+                                        <div class="col-6 mx-auto"><span class="badge badge-pill badge-info">{{ device.channels[i]["user"]}}</span></div>
                                     {% else %}
                                     <div class="col-sm-12 align-items-center" ><span class="badge badge-pill badge-success"><a href="{{ url_for( 'book_device' ,data = urlencode({ 'device':device.name, 'channel':i }) ) }}" class="text-white">Free to use</a></span></div>
                                     {% endif %}
@@ -45,9 +45,9 @@
                                 <div class="row"><div class="col-6">Channel</div><div class="col-6">User</div></div>
                                 {% for i in range(10,device.channels|length) %}
                                     <div class ="row">
-                                        {% if device.channels[i]["State"] == True %}
+                                        {% if device.channels[i]["status"] == True %}
                                             <div class="col-6 ms-4"><span class="badge badge-pill badge-danger">Under use</span></div>
-                                            <div class="col-6 ms-4"><span class="badge badge-pill badge-info">{{ device.channels[i]["User"]}}</span></div>
+                                            <div class="col-6 ms-4"><span class="badge badge-pill badge-info">{{ device.channels[i]["user"]}}</span></div>
                                         {% else %}
                                         <div class="col-sm-12 align-items-center"><span class="badge badge-pill badge-success"><a href="{{ url_for( 'book_device' ,data = urlencode({ 'device':device.name, 'channel':i }) ) }}" class="text-white">Free to use</a></span></div>
                                         {% endif %}
@@ -87,9 +87,9 @@
                                 <div class="row"><div class="col-6">Channel</div><div class="col-6">User</div></div>
                                 {% for c, channel in enumerate(device.channels) %}
                                     <div class ="row">
-                                        {% if channel["State"] == True %}
+                                        {% if channel["status"] == True %}
                                             <div class="col-6"><span class="badge badge-pill badge-danger">Under use</span></div>
-                                            <div class="col-6"><span class="badge badge-pill badge-info">{{ channel["User"]}}</span></div>
+                                            <div class="col-6"><span class="badge badge-pill badge-info">{{ channel["user"]}}</span></div>
                                         {% else %}
                                         <div class="col-sm-12 align-items-center"><span class="badge badge-pill badge-success"><a href="{{ url_for( 'book_device' ,data = urlencode({ 'device':device.name, 'channel':c }) ) }}" class="text-white">Free to use</a></span></div>
                                         {% endif %}
