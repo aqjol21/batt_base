@@ -1,12 +1,12 @@
-BCS-A,8,Biologics,https://www.biologic.net/products/bcs-800/,Cycler: max 15A/9V per channel EIS 10kHz – 10mHz 15 A 9 V
-BCS-B,8,Biologics,https://www.biologic.net/products/bcs-800/,Cycler: max 15A/9V per channel EIS 10kHz – 10mHz 15 A 9 V
-BCS-C,8,Biologics,https://www.biologic.net/products/bcs-800/,Cycler: max 15A/9V per channel EIS 10kHz – 10mHz 15 A 9 V
-BCS-D,8,Biologics,https://www.biologic.net/products/bcs-800/,Cycler: max 15A/9V per channel EIS 10kHz – 10mHz 15 A 9 V
-Arbin LBT21044HC,20,Arbin Instrument,https://www.arbin.com/products/battery-test-equipment/cell-testi,Cycler: max 100A/5V per channel
-PEC SBT10050,12,PEC,https://www.peccorp.com/wp-content/uploads/2017/10/sbt10050_a4_c,Module tester: 50A/100V per channel
-ITECH IT900,1,ITECH,,,Module tester: 150A/80V per channel
-ITECH IT9000,1,ITECH,,,Pack tester: 150A/300V per channel
-Regatron TC.GSS.20.600.400.S,1,Regatron,https://www.regatron.com/product/overview/programmable-bidirecti,Pack tester: 40A/600V per channel
-ESPEC-ARU1100,1,Thermo-Tec,https://www.ttwe.de/wp-content/uploads/2020/09/ESPEC_AR-Series.p,Thermostatic chamber: -45°C to +180°C  1100 l
-ACS-DM1200T,1,ACS,https://acs.angelantoni.com/hubfs/Landing%20Pages%20Photos/Quick,Thermostatic chamber: -40°C to +180°C  1200 l
-ACS-DM340C,1,ACS,https://acs.angelantoni.com/hubfs/Landing%20Pages%20Photos/Quick,Climatic chamber: -70°C – +180°C 10% – 98% 340 l
+BCS-A,8,Biologics,https://www.biologic.net/products/bcs-800/,Cycler: max 15A/9V per channel EIS 10kHz – 10mHz 15 A 9 V,cell cycler,EIS
+BCS-B,8,Biologics,https://www.biologic.net/products/bcs-800/,Cycler: max 15A/9V per channel EIS 10kHz – 10mHz 15 A 9 V,cell cycler,EIS
+BCS-C,8,Biologics,https://www.biologic.net/products/bcs-800/,Cycler: max 15A/9V per channel EIS 10kHz – 10mHz 15 A 9 V,cell cycler,EIS
+BCS-D,8,Biologics,https://www.biologic.net/products/bcs-800/,Cycler: max 15A/9V per channel EIS 10kHz – 10mHz 15 A 9 V,cell cycler,EIS
+Arbin LBT21044HC,20,Arbin Instrument,https://www.arbin.com/products/battery-test-equipment/cell-testi,Cycler: max 100A/5V per channel,cell cycler,
+PEC SBT10050,12,PEC,https://www.peccorp.com/wp-content/uploads/2017/10/sbt10050_a4_c,Module tester: 50A/100V per channel,module cycler,
+ITECH IT900,1,ITECH,,Module tester: 150A/80V per channel,module cycler,
+ITECH IT9000,1,ITECH,,Pack tester: 150A/300V per channel,pack cycler,
+Regatron TC.GSS.20.600.400.S,1,Regatron,https://www.regatron.com/product/overview/programmable-bidirecti,EIS module,EIS,
+ESPEC-ARU1100,1,Thermo-Tec,https://www.ttwe.de/wp-content/uploads/2020/09/ESPEC_AR-Series.p,Thermostatic chamber: -45°C to +180°C  1100 l,temperature chamber,
+ACS-DM1200T,1,ACS,https://acs.angelantoni.com/hubfs/Landing%20Pages%20Photos/Quick,Thermostatic chamber: -40°C to +180°C  1200 l,temperature chamber,
+ACS-DM340C,1,ACS,https://acs.angelantoni.com/hubfs/Landing%20Pages%20Photos/Quick,Climatic chamber: -70°C – +180°C 10% – 98% 340 l,temperature chamber,

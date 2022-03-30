@@ -1,6 +1,6 @@
 from unicodedata import name
 from app import db
-from app.models import Campaign, Device, Channel,Test_type,Cell_type, User, Cell, Test, Project, SingleTest
+from app.models import Campaign, Device, Channel,Test_type,Cell_type, User, Cell, Test, Project, SingleTest,Device_type
 from tqdm import tqdm
 
 import calendar, random, datetime
@@ -18,11 +18,24 @@ def clear_data(session):
 
 
 def db_init():
+    deviceTypes = ["cell cycler","module cycler", "pack cycler", "temperature chamber", "EIS"]
+    for deviceType in tqdm(deviceTypes,desc="Filling device types table"):
+        type_ = Device_type(name = deviceType)
+        db.session.add(type_)
+        db.session.commit()
+
     f = open("devices_init.csv", 'r')
     lines = f.readlines()
     devices = [line.replace("\n","").split(",") for line in lines]
     for device in tqdm(devices, desc="Filling devices table"):
         dev = Device(name = device[0], number_channels= int(device[1]), company= device[2], datasheet_link=device[3], details = device[4])
+        types = device[5:]
+        
+        for type_ in types:
+            print(type_)
+            type__ = Device_type.query.filter_by(name=type_).first()
+            if type__ != None:
+                dev.type.append(type__)
         db.session.add(dev)
         db.session.commit()
         print("added ", device)
@@ -86,7 +99,8 @@ def db_init():
     ends        = [None,"2/18/2022","3/3/3021","6/3/2021","2/21/2019","3/5/2019",None,"3/16/2022"]
     types1      = ["cycling","characterization","characterization","characterization","performance","characterization","performance","cycling"]
     types2      = [None,"EIS","EIS","EIS",None,"EIS","EIS",None]
-
+    chambers    = ["ACS-DM1200T","ACS-DM340C","ACS-DM1200T","","ACS-DM1200T","ACS-DM1200T","ESPEC-ARU1100","ESPEC-ARU1100"]
+    eis         = ["","","","","","", 'Regatron TC.GSS.20.600.400.S', "Regatron TC.GSS.20.600.400.S"]
 
     cells     = [[ "L03", "L26", "L17","L16","L20","L34","L38","L29","L39","L31","L27"],
                 [ "KOK05","KOK02","KOK13"],
@@ -122,6 +136,7 @@ def db_init():
                     [7,8,7,7,8,8],
                     [1,9],
                     [1]]
+    
 
     for i, campaign in enumerate(tqdm(campaigns, desc="Filling tests table")):
         for _ , test in enumerate(tqdm(tests[i],desc="Creating tests for campaign "+str(i))):  
@@ -140,9 +155,15 @@ def db_init():
             if temps[i]  != None: test.temp = temps[i]
             if ends[i]   != None: test.end = datetime.datetime.strptime(ends[i],"%m/%d/%Y")
             if types2[i] != None: test.type_2 =  Test_type.query.filter_by(name=types2[i]).first().id
+            
+            
 
             db.session.add(test)
             db.session.commit()
+
+            if chambers[i] != "": test.devices.append(Device.query.filter_by(name=chambers[i]).first())
+            if eis[i] != "": test.devices.append(Device.query.filter_by(name=eis[i]).first())
+
             
             for __, cell in enumerate(tqdm(cells[i], desc="Adding batches to test "+str(_))):
                 cell_           = Cell.query.filter_by(name=cell).first()

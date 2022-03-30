@@ -5,7 +5,7 @@ from flask_admin.contrib.sqla import ModelView
 from sqlalchemy import inspect
 
 from app import app, db
-from app.models import User, Cell_type, Cell, Channel, Device, Test, Campaign, Test_type, Project, SingleTest
+from app.models import User, Cell_type, Cell, Channel, Device, Test, Campaign, Test_type, Project, SingleTest, Device_type
 
 from os import getcwd, path
 from urllib.parse import urlencode, parse_qs
@@ -130,10 +130,12 @@ admin.add_view(ModelView(Cell_type, db.session))
 admin.add_view(ModelView(Cell, db.session))
 admin.add_view(ModelView(Channel, db.session))
 admin.add_view(ModelView(Device, db.session))
+admin.add_view(ModelView(Device_type, db.session))
 admin.add_view(ModelView(Test_type, db.session))
 admin.add_view(ModelView(SingleTest, db.session))
 admin.add_view(ModelView(Test, db.session))
 admin.add_view(ModelView(Campaign, db.session))
+
 
 
 #============Test===============================================

@@ -5,8 +5,18 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 
 
-test_cell_identifier=db.Table('test_cell_identifier', db.Model.metadata,
-    db.Column('cell_id', db.Integer, db.ForeignKey('cell.id')),
+# test_cell_identifier=db.Table('test_cell_identifier', db.Model.metadata,
+#     db.Column('cell_id', db.Integer, db.ForeignKey('cell.id')),
+#     db.Column('test_id', db.Integer, db.ForeignKey('test.id'))
+# )
+
+device_type_identifier=db.Table('association', db.Model.metadata,
+    db.Column('device_id', db.Integer, db.ForeignKey('device.id')),
+    db.Column('device_type_id', db.Integer, db.ForeignKey('device_type.id'))
+)
+
+device_enaged_identifier=db.Table('association2', db.Model.metadata,
+    db.Column('device_id', db.Integer, db.ForeignKey('device.id')),
     db.Column('test_id', db.Integer, db.ForeignKey('test.id'))
 )
 
@@ -138,10 +148,11 @@ class Device(db.Model):
     company         = db.Column(db.String(64))
     datasheet_link  = db.Column(db.String(64))
     details         = db.Column(db.String(64))
+    # type            = db.Column(db.Integer, db.ForeignKey('device_type.id'))
+    type            = db.relationship("Device_type", secondary=device_type_identifier)
     channel_id      = db.relationship('Channel', backref='device_channel',lazy='dynamic',foreign_keys="Channel.device_id")
-    # test_id         = db.relationship('Test', backref='device1',lazy='dynamic',foreign_keys="Test.device_id")
-    test2_id        = db.relationship('Test', backref='device2',lazy='dynamic',foreign_keys="Test.device2_id")
-    test3_id        = db.relationship('Test', backref='device3',lazy='dynamic',foreign_keys="Test.device3_id")
+    # test2_id        = db.relationship('Test', backref='device2',lazy='dynamic',foreign_keys="Test.device2_id")
+    # test3_id        = db.relationship('Test', backref='device3',lazy='dynamic',foreign_keys="Test.device3_id")
     
     def __repr__(self):
         return '{}'.format(self.name)  
@@ -158,15 +169,14 @@ class Test(db.Model):
     end           = db.Column(db.DateTime(timezone=True))
     temp          = db.Column(db.Float)
     
-    # channel_id    = db.Column(db.Integer, db.ForeignKey('channel.id'))
-    # device_id     = db.Column(db.Integer, db.ForeignKey('device.id'))
+
     device2_id    = db.Column(db.Integer, db.ForeignKey('device.id'))
     device3_id    = db.Column(db.Integer, db.ForeignKey('device.id'))
     user_id       = db.Column(db.Integer, db.ForeignKey('user.id'))
     campaign_id   = db.Column(db.Integer, db.ForeignKey('campaign.id'))
     type_2        = db.Column(db.Integer, db.ForeignKey('test_type.id'))
     type_1        = db.Column(db.Integer, db.ForeignKey('test_type.id'))
-    
+    devices       = db.relationship("Device", secondary=device_enaged_identifier)
     singleTests   = db.relationship('SingleTest', backref='batch_list',lazy='dynamic',foreign_keys="SingleTest.test_id")
     
     def __repr__(self):
@@ -183,7 +193,7 @@ class SingleTest(db.Model):
     cycler_file    = db.Column(db.String(64))
     prototype_file = db.Column(db.String(64))
     def __repr__(self):
-            return 'Batsch {}'.format(self.id) 
+            return 'Batch {}'.format(self.id) 
 
 class Campaign(db.Model):
     __tablename__ = 'campaign'
@@ -207,6 +217,13 @@ class Test_type(db.Model):
     def __repr__(self):
         return '{}'.format(self.name) 
 
+class Device_type(db.Model):
+     __tablename__ = 'device_type'
+     id            = db.Column(db.Integer,primary_key=True)
+     name          = db.Column(db.String(64),index=True)
+    #  type1_id      = db.relationship('Device', backref='type_id',lazy='dynamic',foreign_keys="Device.type")
+     def __repr__(self):
+        return '{}'.format(self.name)
 
 class Project(db.Model):
     __tablename__ = 'project'
