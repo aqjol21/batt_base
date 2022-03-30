@@ -13,7 +13,7 @@ from urllib.parse import urlencode, parse_qs
 from app.forms import CellTypeForm,CellForm,DeviceForm,StartMeasureForm,EndMeasureForm, displayScheduleControl
 
 ###### DESIGN & DEBUG #########
-from app.fakeData import campain, cell, schedule
+from app.fakeData import cell, schedule
 ##############################
 
 @app.context_processor
@@ -61,8 +61,40 @@ def index():
 #============TEST===============================================
 @app.route('/tests_list', methods=['GET'])
 def tests_list_get():
-    campains = campain.get_campains()
-    return render_template('test_list.html', title="Test details", campains = campains)
+    campaings = []
+    for campaign in Campaign.query.all():
+        campaign_ = {'name':campaign.name, 'project':campaign.project}
+        tests = []
+        for test in Test.query.filter_by(campaign_id=campaign.id):
+            test_ = {}
+            for device in test.devices:            
+                if "chamber" in str(device.type[0]):
+                    test_['chamber'] = device.name
+                elif "EIS" in str(device.type[0]):
+                    test_['eis']=device.name
+            for single in SingleTest.query.filter_by(test_id=test.id).all():
+                channel = Channel.query.filter_by(id =single.channel_id).first()
+                try:
+                    test_[ 'type_1']  = Test_type.query.filter_by(id=test.type_1).first().name
+                except:
+                    pass
+                try:
+                    test_[ 'type_2']  = Test_type.query.filter_by(id=test.type_2).first().name
+                except:
+                    pass
+                test_[ 'start' ]  = test.start
+                test_[ 'end'   ]  = test.end
+                test_[ 'user'  ]  = test.user
+                test_[ 'temp'  ]  = test.temp
+                test_[ 'channel'] = channel
+                test_[ 'device']  = Device.query.filter_by(id=channel.device_id).first().name
+                test_[ 'cycler']  = single.cycler_file
+                test_[ 'cms']     = single.prototype_file
+                test_[ 'cell' ]   = Cell.query.filter_by(id=single.cell_id).first().name
+                tests.append(test_)
+        campaign_['tests']=tests
+        campaings.append(campaign_)
+    return render_template('test_list.html', title="Test details", campains = campaings)
 
 @app.route('/tests_list', methods=['POST'])
 def tests_list_post():
@@ -139,12 +171,6 @@ def book_device(data=None):
 
 #============Admin==============================================
 
-
-
-class ChildView(ModelView):
-    column_display_pk = True # optional, but I like to see the IDs in the list
-    column_hide_backrefs = False
-    column_list = [c_attr.key for c_attr in inspect(Test).mapper.column_attrs]
 
 admin = Admin(app, name='Dashboard')  
 admin.add_view(ModelView(User, db.session))

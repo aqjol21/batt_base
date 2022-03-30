@@ -124,6 +124,9 @@ class Cell(db.Model):
     model_id      = db.Column(db.Integer, db.ForeignKey('cell_type.id'))
     purchase_date = db.Column(db.DateTime(timezone=True))
     under_use     = db.Column(db.Boolean)
+    location      = db.Column(db.String(64))
+
+    single_test      = db.relationship('SingleTest', backref='single_test+_id',lazy='dynamic',foreign_keys="SingleTest.cell_id")
 
     def __repr__(self):
         return '{}'.format(self.name)  
@@ -139,7 +142,7 @@ class Channel(db.Model):
     single_test_id = db.relationship('SingleTest', backref='channel_test',lazy='dynamic',foreign_keys="SingleTest.channel_id")
 
     def __repr__(self):
-        return 'channel :{}'.format(self.chan_number)  +' device: {}'.format(self.device_id)
+        return '{}'.format(self.chan_number) 
     
 
 class Device(db.Model):
@@ -192,6 +195,8 @@ class SingleTest(db.Model):
     cycler_file    = db.Column(db.String(64))
     prototype_file = db.Column(db.String(64))
 
+    
+
     def __repr__(self):
             return 'Batch {}'.format(self.id) 
 
@@ -222,7 +227,7 @@ class Device_type(db.Model):
      __tablename__ = 'device_type'
      id            = db.Column(db.Integer,primary_key=True)
      name          = db.Column(db.String(64),index=True)
-    #  type1_id      = db.relationship('Device', backref='type_id',lazy='dynamic',foreign_keys="Device.type")
+     devices       = db.relationship('Device',  secondary=device_type_identifier)
      def __repr__(self):
         return '{}'.format(self.name)
 

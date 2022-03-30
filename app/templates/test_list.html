@@ -27,7 +27,7 @@
           <tr>
             <th data-field="columnA" data-filter-control="input">Campain</th>
             <th data-field="columnB" data-filter-control="select">Name</th>
-            <th data-field="columnC" data-filter-control="input">Status</th>
+            <th data-field="columnC" data-filter-control="select">Status</th>
             <th data-field="columnD" data-filter-control="select">User</th>
             <th>Test</th>
             <th data-field="columnF" data-filter-control="input">Cell</th>
@@ -37,14 +37,11 @@
             <th data-field="columnJ" data-filter-control="select">Device</th>
             <th data-field="columnK" data-filter-control="input">Channel</th>
             <th data-field="columnL" data-filter-control="select">Chamber</th>
-            <th data-field="columnM" data-filter-control="input">EIS</th>
+            <th data-field="columnM" data-filter-control="select">EIS</th>
             <th data-field="columnN" data-filter-control="input">Temp</th>
             <th data-field="columnO" data-filter-control="input">Start</th>
             <th data-field="columnP" data-filter-control="input">End</th>
-            <th>Cycler file</th>
-            <th>CMS file</th>
-
-            <th></th>
+            <th>Data files</th>
           </tr>
         </thead>
         <tbody>
@@ -60,7 +57,7 @@
                   <p class="text-muted">Completed</p>
                   {% endif %}
                 </td>
-                <td>{{ campain.user }}</td>
+                <td>{{ test.user }}</td>
                 <td>{{ j }}</td>
                 <td>{{ test.cell }}</td>
                 <td> Type </td>
@@ -68,13 +65,13 @@
                 <td>{{ test.type_2 }}</td>
                 <td>{{ test.device }}</td>
                 <td>{{ test.channel }}</td>
-                <td>{{ test.device2 }}</td>
-                <td>{{ test.device3 }}</td>
+                <td>{{ test.chamber }}</td>
+                <td>{{ test.eis }}</td>
                 <td>{{ test.temp }}</td>
                 <td>{{ test.start }}</td>
                 <td>{{ test.end }}</td>
-                <td><a href="/download/{{ test.file  }}" class="text-primary">{{ test.file }}</a> </td>
-                <td><a href="/download/{{ test.file  }}" class="text-primary">{{ test.file }}</a> </td>
+                <td><a href="/download/{{ test.cycler  }}" class="text-primary">cycler </a> </br>
+                    <a href="/download/{{ test.cms  }}" class="text-primary">cms </a> </td>
                 </tr>
             {% endfor %}
           {% endfor %}

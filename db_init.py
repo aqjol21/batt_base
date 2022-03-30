@@ -193,7 +193,7 @@ def db_init():
                 channel        = Channel.query.filter_by(device_id=device.id).filter_by(chan_number=channels[i][__]-1).first() 
                 # print(campaign, test,  channel, device, cell, channels[i][__]-1 )
                 if test.end != None:
-                    if datetime.datetime.today() < test.end:
+                    if datetime.datetime.today() > test.end:
                         channel.status = False
                         cell_.under_use = False
                 else: 
