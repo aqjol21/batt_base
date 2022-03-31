@@ -124,7 +124,7 @@ class Cell(db.Model):
     model_id      = db.Column(db.Integer, db.ForeignKey('cell_type.id'))
     purchase_date = db.Column(db.DateTime(timezone=True))
     under_use     = db.Column(db.Boolean)
-    location      = db.Column(db.String(64))
+    location      = db.Column(db.Integer, db.ForeignKey('location.id'))
 
     single_test      = db.relationship('SingleTest', backref='single_test+_id',lazy='dynamic',foreign_keys="SingleTest.cell_id")
 
@@ -241,5 +241,14 @@ class Project(db.Model):
     singleTests_i = db.relationship('Campaign', backref='project_id',lazy='dynamic',foreign_keys="Campaign.project")
     def __repr__(self):
         return '{}'.format(self.name)  
+
+class Location(db.Model):
+    __tablename__ = 'location'
+    id            = db.Column(db.Integer,primary_key=True)
+    name          = db.Column(db.String(64),unique=True)
+
+    cellslocation_id= db.relationship('Cell', backref='celllocation',lazy='dynamic',foreign_keys="Cell.location")
+    def __repr__(self):
+        return '{}'.format(self.name) 
 
 db.create_all()

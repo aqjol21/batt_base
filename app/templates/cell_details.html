@@ -5,7 +5,7 @@
 <div class="row container-fluid mt-3">
     <div class="col-1"></div>
     <div class="col-10">
-        <h1>Cell: {{ cell_id }} details</h1>
+        <h1>Cell: {{ cell.name }} details</h1>
         <div class="row mt-3">
             <div class="col-5 me-3">
                 <h2>Unit details</h2>
@@ -14,12 +14,20 @@
                             <tr>
                             <td>Purchase date:</td> <td>{{ cell.purchase_date }}</td>
                             </tr>
+                            
+                            {% if cell.under_use == False %}
                             <tr>
-                            <td>Under use? :</td> <td>{{ cell.under_use }}</td>
+                            <td>Cell available</td>
                             </tr>
                             <tr>
-                            <td>Last use:</td> <td>{{ cell.last_use }}</td>
+                            <td>Location:</td> <td>{{ cell.location }}</td>
                             </tr>
+                            {% else %}
+                            <tr>
+                                <td>Cell under use</td>
+                                </tr>
+                            {% endif %}
+
                     </tbody>
                   </table>
                 <div class="divider" style="border-top: 2px solid #999;"></div>
@@ -74,15 +82,15 @@
                 <h2>Cycling history</h2>
 
                 {% for _, campain in enumerate(campains) %}
-                    <h3>Campain {{ _ }}: {{ campain.name }}  </h3>
-                    <p>{{ campain.description }}</p>
+                    <h3>Campaign: {{ campain.name }}  </h3>
+                    <p>Notes: {{ campain.description }}</p>
                     <div class="container-fluid" style = 'overflow-y:scroll; height:400px;'>
                     <div class="row">
                     {% for i, test in enumerate(tests[_]) %}
                         <div class="card" style="width: 18rem;">
                             <div class="card-body">
                                 <h5 class="card-title">Test # {{ i }} </h5>
-                                <h6 class="card-subtitle mb-2 text-muted"> {{ test.name }} </h6>
+                                <h6 class="card-subtitle mb-2 text-muted"> Test name: {{ test.name }} </h6>
                                 <p class="card-text">
                                 <table id="history" class="table">
                                     <tbody >
@@ -90,7 +98,11 @@
                                         <tr><td>Started: </td> <td>{{ test.start }} </td></tr>
                                         <tr><td>Ended: </td> <td>{{ test.end }} </td></tr>
                                         <tr><td>By: </td> <td>{{ test.user }} </td></tr>
-                                        <tr><td>On: </td> <td>{{ test.channel_id }} </td></tr>
+                                        <tr><td>On: </td> <td>{{ test.device }}
+                                                {% for device in test.devices %}
+                                                </br>{{ device }} 
+                                                {% endfor %}
+                                        </td></tr>
                                     </tbody>
                                 </table>
                                 </p>

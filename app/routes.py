@@ -1,11 +1,11 @@
-from flask import render_template,url_for, redirect,  send_file
+from flask import render_template,url_for, redirect,  send_file, flash
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 
 from sqlalchemy import inspect
 
 from app import app, db
-from app.models import User, Cell_type, Cell, Channel, Device, Test, Campaign, Test_type, Project, SingleTest, Device_type
+from app.models import User, Cell_type, Cell, Channel, Device, Test, Campaign, Test_type, Project, SingleTest, Device_type, Location
 
 from os import getcwd, path
 from urllib.parse import urlencode, parse_qs
@@ -13,7 +13,7 @@ from urllib.parse import urlencode, parse_qs
 from app.forms import CellTypeForm,CellForm,DeviceForm,StartMeasureForm,EndMeasureForm, displayScheduleControl
 
 ###### DESIGN & DEBUG #########
-from app.fakeData import cell, schedule
+from app.fakeData import schedule
 ##############################
 
 @app.context_processor
@@ -103,23 +103,110 @@ def tests_list_post():
 #============CELLS===============================================
 @app.route('/cells', methods=['GET'])
 def cells_get():
+    cellTypes = [(type_.id, type_.maker+" "+type_.model) for type_ in Cell_type.query.all() ]
     forms = {'type':CellTypeForm(), 'unit':CellForm()}
-    cells = cell.get_cells()
+    forms['unit'].model.choices = cellTypes
+    locations = [(location.id, location.name) for location in Location.query.all()]
+    forms['unit'].location.choices = locations
+
+    cells =[]
+    for cell in Cell.query.all():
+        cell_ ={'id':cell.id, 'name':cell.name, 
+        'location': Location.query.filter_by(id = cell.location).first(), 
+        'type':Cell_type.query.filter_by(id=cell.model_id).first().model, 
+        'under_use':cell.under_use }
+        single  = SingleTest.query.filter_by(cell_id=cell.id).order_by(SingleTest.id.desc()).first() #fifo by default -> order by id descending
+        if single != None : # has been used before
+            test    = Test.query.filter_by(id=single.test_id).first()
+            channel = Channel.query.filter_by(id=single.channel_id).first()
+            device  = Device.query.filter_by(id=channel.device_id).first()
+            user    = User.query.filter_by(id=test.user_id).first()
+            cell_['user']=user.username
+            cell_['device']=device.name
+            cell_['end'] = test.end
+        else:
+            cell_['end'] = "never used"
+        cells.append(cell_)
+
     return render_template('cells_management.html',forms=forms, cells=cells)
 
 @app.route('/cells', methods=['POST'])
 def cells_post():
+    forms = {'type':CellTypeForm(), 'unit':CellForm()}
+    cellTypes = [(type_.id, type_.maker+" "+type_.model) for type_ in Cell_type.query.all() ]
+    forms = {'type':CellTypeForm(), 'unit':CellForm()}
+    forms['unit'].model.choices = cellTypes
+    locations = [(location.id, location.name) for location in Location.query.all()]
+    forms['unit'].location.choices = locations
+
+    if forms['type'].validate_on_submit():
+        if Cell_type.query.filter_by(model=forms['type'].modeldata).first() is not None:
+            flash("Model already in database")
+        else:
+            try: 
+                type = Cell_type(
+                    model           =forms['type'].model           .data,
+                    maker           =forms['type'].maker           .data,
+                    anode           =forms['type'].anode           .data,
+                    cathode         =forms['type'].cathode         .data,
+                    package         =forms['type'].package         .data,
+                    capacity        =forms['type'].capacity        .data,
+                    max_dc_current  =forms['type'].max_dc_current  .data,
+                    max_peak_current=forms['type'].max_peak_current.data,
+                    min_voltage     =forms['type'].min_voltage     .data,
+                    max_voltage     =forms['type'].max_voltage     .data,
+                    min_temperature =forms['type'].min_temperature .data,
+                    max_temperature =forms['type'].max_temperature .data,
+                    note            =forms['type'].note            .data
+                )
+                db.session.add(type)
+                db.session.commit()
+                flash("Added new cell type {} to database.".format(forms['type'].model.data))
+            except Exception  as e:
+                flash("failed, error code "+e)
+    elif forms['unit'].validate_on_submit():
+        if Cell.query.filter_by(id=forms['unit'].id.data).first() is not None:
+            flash('Cell id already in the database')
+        else:
+            try:
+                cell = Cell(
+                    name         =forms['unit'].name.data,
+                    model_id     =forms['unit'].model.data,
+                    purchase_date=forms['unit'].purchase_date.data,
+                    under_use    =False,
+                    location     =forms['unit'].location.data
+                )
+                db.session.add(cell)
+                db.session.commit()
+            except Exception as e:
+                 flash("failed, error code "+e)
+        
     return redirect(url_for('cells_get'))
 
 
 
 @app.route('/cell_details<id>', methods=['GET'])
 def cell_details_get(id):
-    cell = []
-    model = []
-    campains= [{'name':'c1', 'description': "blablablabl"} for _ in range(3)]
-    tests   = [[{'name':"test1",'description':"a test", 'start':"2022-02-01",'end':"2022-02-15", "user":"Me", "Channel":"Arbin 18"}for __ in range(5)] for _ in range(3)]
-    return render_template('cell_details.html',model= model, cell=cell, campains= campains, tests=tests)
+    cell = Cell.query.filter_by(id=id).first()
+    model = Cell_type.query.filter_by(id=cell.model_id).first()
+
+    singles   = SingleTest.query.filter_by(cell_id=cell.id).all()
+    tests_    = [ Test.query.filter_by(id=single.test_id).first() for single in singles ]
+    tests_    = [ test.__dict__ for test in tests_]
+    campaigns = list(dict.fromkeys([ Campaign.query.filter_by(id=test['campaign_id']).first() for test in tests_]))  
+    channels  = [Channel.query.filter_by(id=single.channel_id).first() for single in singles]
+    devices   = [Device.query.filter_by(id=channel.device_id).first() for channel in channels]
+    details   = [ "device: "+devices[_].name+" channel: "+str(channels[_].chan_number) for _ in range(len(devices)) ]
+    for t, test in enumerate(tests_):
+        test['device']=details[t]
+    tests = [ [ {'name':test_['name'],'start':test_['start'],'end': test_['end'],
+             'user':User.query.filter_by(id=test_['user_id']).first().username, 'device':test_['device']  } 
+                for test_ in tests_ if test_['campaign_id'] == campaign.id ] for campaign in campaigns]
+    cell_ = {'id':cell.id, 'name':cell.name, 
+        'location': Location.query.filter_by(id = cell.location).first(), 
+        'type':Cell_type.query.filter_by(id=cell.model_id).first().model, 
+        'under_use':cell.under_use } 
+    return render_template('cell_details.html',model= model, cell=cell_, campains= campaigns, tests=tests)
 
 
 
@@ -176,6 +263,7 @@ admin = Admin(app, name='Dashboard')
 admin.add_view(ModelView(User, db.session))
 admin.add_view(ModelView(Project, db.session))
 admin.add_view(ModelView(Cell_type, db.session))
+admin.add_view(ModelView(Location, db.session))
 admin.add_view(ModelView(Cell, db.session))
 admin.add_view(ModelView(Channel, db.session))
 admin.add_view(ModelView(Device, db.session))
@@ -184,6 +272,8 @@ admin.add_view(ModelView(Test_type, db.session))
 admin.add_view(ModelView(SingleTest, db.session))
 admin.add_view(ModelView(Test, db.session))
 admin.add_view(ModelView(Campaign, db.session))
+
+
 
 
 

@@ -1,6 +1,6 @@
 from unicodedata import name
 from app import db
-from app.models import Campaign, Device, Channel,Test_type,Cell_type, User, Cell, Test, Project, SingleTest,Device_type
+from app.models import Campaign, Device, Channel,Test_type,Cell_type, User, Cell, Test, Project, SingleTest,Device_type, Location
 from tqdm import tqdm
 
 import calendar, random, datetime
@@ -45,6 +45,12 @@ def db_init():
             db.session.add(chan)
             db.session.commit()
     
+    locations = [ "box_"+str(i) for i in range (5) ]
+    for location in tqdm(locations, desc="Filling locations"):
+        loc = Location(name=location)
+        db.session.add(loc)
+        db.session.commit()
+
     test_types = ['performance', 'cycling', 'EIS', 'aging',"cycling","characterization" ]
     for type in tqdm(test_types, desc="Filling test_type table"):
         test = Test_type(name=type)
@@ -89,12 +95,12 @@ def db_init():
         db.session.commit()
     
     campaigns = Campaign.query.all()
-    tests     = [ ['6_2'],['1_2'],['3_3'],['1_4'],['2_1'],['3_2'],['1_1'],['3_2'] ]
+    tests     = [ ['6_2'],['1_2'],['3_3'],['1_4'],['2_1'],['3_1'],['1_1'],['3_2'] ]
     authors    = ["pii","sbh","cbo","cbo","pii","cbo","pii","pii"]
     projects    = [ "PhD pii", "PhD sbh", "Batman", "Spartacus ", "Spet_characterization", "Spet_performance", "Apple_pie", "Ice_cream" ]
     temps       = [20,20,5,None,40,0,180,-20]
     starts      = ["2/16/2022","2/16/2022","2/26/2021","5/28/2021","2/9/2019","2/22/2019","3/16/2022","3/16/2022"]
-    ends        = [None,"2/18/2022","3/3/3021","6/3/2021","2/21/2019","3/5/2019",None,"3/16/2022"]
+    ends        = [None,"2/18/2022","3/3/2021","6/3/2021","2/21/2019","3/5/2019",None,"3/16/2022"]
     types1      = ["cycling","characterization","characterization","characterization","performance","characterization","performance","cycling"]
     types2      = [None,"EIS","EIS","EIS",None,"EIS","EIS",None]
     chambers    = ["ACS-DM1200T","ACS-DM340C","ACS-DM1200T","","ACS-DM1200T","ACS-DM1200T","ESPEC-ARU1100","ESPEC-ARU1100"]
@@ -160,7 +166,9 @@ def db_init():
                             type_1=type1.id)
 
             if temps[i]  != None: test.temp = temps[i]
-            if ends[i]   != None: 
+            if ends[i]   == None:
+                test.active = True
+            else: 
                 test.end = datetime.datetime.strptime(ends[i],"%m/%d/%Y")
                 if test.end > datetime.datetime.today():
                     test.active = True
@@ -192,13 +200,13 @@ def db_init():
                 device         = Device.query.filter_by(name=devices[i][__]).first()
                 channel        = Channel.query.filter_by(device_id=device.id).filter_by(chan_number=channels[i][__]-1).first() 
                 # print(campaign, test,  channel, device, cell, channels[i][__]-1 )
-                if test.end != None:
-                    if datetime.datetime.today() > test.end:
-                        channel.status = False
-                        cell_.under_use = False
+                if test.active == True:
+                    channel.status = True
+                    cell_.under_use = True
                 else: 
-                    channel.status = True   
-                    cell_.under_use = True   
+                    channel.status = False   
+                    cell_.under_use = False   
+                    cell_.location=random.choice([loc.id for loc in Location.query.all()])
                 cycler_file    = filesnames[i][__]+".csv"
                 prototype_file = filesnames[i][__]+"_cms.csv"
                 element        = SingleTest(channel_id=channel.id,cell_id=cell_.id,test_id=test.id,cycler_file=cycler_file,prototype_file=prototype_file)

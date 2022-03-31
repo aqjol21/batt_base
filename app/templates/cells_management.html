@@ -16,6 +16,7 @@
                     <thead class="thead-light" >
                       <tr>
                         <th>Cell id</th>
+                        <th>Cell name</th>
                         <th>Model</th>
                         <th>Device</th>
                         <th>User</th>
@@ -24,13 +25,16 @@
                     </thead>
                     <tbody >
                             {% for cell in cells %}
+                            {% if cell.under_use == True %}
                             <tr class="clickable " onclick="window.location='/cell_details{{ cell.id }}'">
                             <td>{{ cell.id }}</td>
+                            <td>{{ cell.name }}</td>
                             <td>{{ cell.type }}</td>
                             <td>{{ cell.device }}</td>
                             <td>{{ cell.user }}</td>
                             <td>{{ cell.end }}</td>
                             </tr>
+                            {% endif %}
                             {% endfor %}
                     </tbody>
                   </table>
@@ -47,6 +51,7 @@
                     <thead class="thead-light" >
                         <tr>
                         <th>Cell id</th>
+                        <th>Cell name</th>
                         <th>Model</th>
                         <th>Last use</th>
                         <th>Location</th>
@@ -54,12 +59,15 @@
                     </thead>
                     <tbody>
                         {% for cell in cells %}
+                        {% if cell.under_use == False %}
                         <tr class="clickable " onclick="window.location='/cell_details{{ cell.id }}'">
                         <td>{{ cell.id }}</td>
+                        <td>{{ cell.name }}</td>
                         <td>{{ cell.type }}</td>
-                        <td>{{ cell.last }}</td>
+                        <td>{{ cell.end }}</td>
                         <td>{{ cell.location }}</td>
                         </tr>
+                        {% endif %}
                         {% endfor %}
                     </tbody>
                   </table>

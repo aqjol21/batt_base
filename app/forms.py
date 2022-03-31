@@ -32,9 +32,11 @@ class CellTypeForm(FlaskForm):
     submit   = SubmitField('Add new type')
 
 class CellForm(FlaskForm):
+    name          = StringField('Name')
     model         = SelectField("cell model", coerce=int, validators=[DataRequired()])
     purchase_date = DateField("Purchase date",validators=[DataRequired()])
-    id            = IntegerField("Cell id (from sticker)", validators=[DataRequired()])
+    id            = IntegerField("Cell id (from sticker)")
+    location      = SelectField("Storage location", coerce=int, validators=[DataRequired()])
     submit        = SubmitField('Add cell')
 
 class DeviceForm(FlaskForm):
