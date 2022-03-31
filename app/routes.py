@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from flask import render_template,url_for, redirect,  send_file, flash
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
@@ -9,6 +10,7 @@ from app.models import User, Cell_type, Cell, Channel, Device, Test, Campaign, T
 
 from os import getcwd, path
 from urllib.parse import urlencode, parse_qs
+import datetime
 
 from app.forms import CellTypeForm,CellForm,DeviceForm,StartMeasureForm,EndMeasureForm, displayScheduleControl
 
@@ -27,6 +29,35 @@ def inject_str():
 @app.context_processor
 def inject_urlencode():
     return dict(urlencode=urlencode)    
+
+
+def gap_filling(A):
+        for _ in range(len(A)-1):
+            if (A[_+1]['start']-A[_]['end']).days <= 1: #continuous
+                pass
+            else:
+                sched={'state': True, 'start':A[_]['end']+datetime.timedelta(days=1), 'end': A[_+1]['start']-datetime.timedelta(days=1)}
+                A.insert(_+1, sched)
+                gap_filling(A)
+
+'''___________________________________________________________________________________________________________________________________
+                Display functions
+
+    Contains
+    index()
+        displays the main home page
+    tests_list_get()
+        list of every tests ran, on going and schedules
+    cells_get()
+        list of every cells purchased
+    cell_details_get()
+        list of details available for a specific cell
+        parameters
+        ==========
+        id : int, id of the cell of which the details must be displayed
+    bookig_get()
+___________________________________________________________________________________________________________________________________'''
+
 
 #============INDEX===============================================
 @app.route('/')
@@ -88,17 +119,17 @@ def tests_list_get():
                 test_[ 'temp'  ]  = test.temp
                 test_[ 'channel'] = channel
                 test_[ 'device']  = Device.query.filter_by(id=channel.device_id).first().name
-                test_[ 'cycler']  = single.cycler_file
-                test_[ 'cms']     = single.prototype_file
                 test_[ 'cell' ]   = Cell.query.filter_by(id=single.cell_id).first().name
+                if test.end < datetime.datetime.today():
+                    test_[ 'cycler']  = single.cycler_file
+                    test_[ 'cms']     = single.prototype_file
+                else:
+                    test_[ 'cycler']  = None
+                    test_[ 'cms']     = None
                 tests.append(test_)
         campaign_['tests']=tests
         campaings.append(campaign_)
     return render_template('test_list.html', title="Test details", campains = campaings)
-
-@app.route('/tests_list', methods=['POST'])
-def tests_list_post():
-    return redirect(url_for('tests_list_get'))
 
 #============CELLS===============================================
 @app.route('/cells', methods=['GET'])
@@ -129,6 +160,148 @@ def cells_get():
         cells.append(cell_)
 
     return render_template('cells_management.html',forms=forms, cells=cells)
+
+@app.route('/cell_details<id>', methods=['GET'])
+def cell_details_get(id):
+    cell = Cell.query.filter_by(id=id).first()
+    model = Cell_type.query.filter_by(id=cell.model_id).first()
+
+    singles   = SingleTest.query.filter_by(cell_id=cell.id).all()
+    tests_    = [ Test.query.filter_by(id=single.test_id).first() for single in singles ]
+    tests_    = [ test.__dict__ for test in tests_]
+    campaigns = list(dict.fromkeys([ Campaign.query.filter_by(id=test['campaign_id']).first() for test in tests_]))  
+    channels  = [Channel.query.filter_by(id=single.channel_id).first() for single in singles]
+    devices   = [Device.query.filter_by(id=channel.device_id).first() for channel in channels]
+    details   = [ "device: "+devices[_].name+" channel: "+str(channels[_].chan_number) for _ in range(len(devices)) ]
+    for t, test in enumerate(tests_):
+        test['device']=details[t]
+    tests = [ [ {'name':test_['name'],'start':test_['start'],'end': test_['end'],
+             'user':User.query.filter_by(id=test_['user_id']).first().username, 'device':test_['device']  } 
+                for test_ in tests_ if test_['campaign_id'] == campaign.id ] for campaign in campaigns]
+    cell_ = {'id':cell.id, 'name':cell.name, 
+        'location': Location.query.filter_by(id = cell.location).first(), 
+        'type':Cell_type.query.filter_by(id=cell.model_id).first().model, 
+        'under_use':cell.under_use } 
+    return render_template('cell_details.html',model= model, cell=cell_, campains= campaigns, tests=tests)
+
+#============Equipement===============================================
+@app.route('/schedule', methods=['GET'])
+def bookig_get():
+    current_week = datetime.datetime.today().isocalendar()[1]
+    length =10
+    max_week     = current_week + length
+    # schedules = []
+    # for device in Device.query.all():
+    #     device_ ={'name':device.name, 'channels':[]}
+    #     for channel in Channel.query.filter_by(device_id=device.id).all():
+    #         singletests = SingleTest.query.filter_by(channel_id=channel.id).all()
+    #         tests = [Test.query.filter_by(id=single.test_id).first() for single in singletests]
+    #         schedule_ = []
+    #         for test in tests:
+    #             if test.end != None and test.end < datetime.datetime.today():
+    #                 pass
+    #             elif test.end != None:
+    #                 sched = {"test_name":test.name,
+    #                         "test_type":test.type_1,
+    #                         "test_type2":test.type_2,
+    #                         "user":User.query.filter_by(id = test.user_id).first().username,
+    #                         "test_id":test.id,
+    #                         'state':False
+    #                         }
+    #                 sched['start'] = test.start.isocalendar() if test.start > datetime.datetime.today() else datetime.datetime.today()
+    #                 sched['end']   = test.end
+    #                 schedule_.append(sched)
+
+    #         if len(schedule_) > 0:
+    #             schedule_ = sorted(schedule_, key=lambda x: x['start'])
+    #             if schedule_[0]['start'] > datetime.datetime.today():
+    #                 sched={'state': True, 'start': datetime.datetime.today(), 'end': datetime.datetime.today()+datetime.timedelta(weeks=length)}
+    #                 schedule_.insert(0, sched)
+                
+    #             if schedule_[-1]['end'] < datetime.datetime.today()+datetime.timedelta(weeks=length):
+    #                 sched={'state': True, 'start': schedule_[-1]['end']+datetime.timedelta(days=1), 'end': datetime.datetime.today()+datetime.timedelta(weeks=length)}
+    #                 schedule_.insert(-1, sched)
+
+    #             gap_filling(schedule_)
+
+    #             for sched in schedule_:
+    #                 sched['start'] = sched['start'].isocalendar()
+    #                 sched['end'] = sched['end'].isocalendar()
+    #         else:
+    #             schedule_ = [
+    #                 {'state': True, 'start':datetime.datetime.today().isocalendar(),
+    #                 'end': (datetime.datetime.today()+datetime.timedelta(weeks=length)).isocalendar() } ]
+
+    #         device_['channels'].append(schedule_)
+    #         device_['maxWeek'] = max([sched['end'][2] for sched in schedule_ ]) if len(schedule_)> 0 else 0
+    # schedules.append(device_)
+
+
+    schedules = []
+    for device in Device.query.all():
+        device_ ={'name':device.name, 'channels':[]}
+        for channel in Channel.query.filter_by(device_id=device.id).all():
+            singletests = SingleTest.query.filter_by(channel_id=channel.id).all()
+            tests = [Test.query.filter_by(id=single.test_id).first() for single in singletests]
+            schedule_ = []
+            for test in tests:
+                if test.end != None and test.end < datetime.datetime.today():
+                    pass
+                elif test.end != None:
+                    sched = {"test_name":test.name,
+                            "test_type":test.type_1,
+                            "test_type2":test.type_2,
+                            "user":User.query.filter_by(id = test.user_id).first().username,
+                            "test_id":test.id
+                            }
+                    sched['start'] = test.start.isocalendar() if test.start > datetime.datetime.today() else datetime.datetime.today()
+                    sched['end']   = test.end
+                    schedule_.append(sched)
+
+            if len(schedule_) > 0:
+                schedule_ = sorted(schedule_, key=lambda x: x['start'])
+                if schedule_[0]['start'] > datetime.datetime.today():
+                    sched={'state': True, 'start': datetime.datetime.today(), 'end': datetime.datetime.today()+datetime.timedelta(weeks=length)}
+                    schedule_.insert(0, sched)
+                if schedule_[-1]['end'] < datetime.datetime.today()+datetime.timedelta(weeks=length):
+                        sched={'state': True, 'start': schedule_[-1]['end']+datetime.timedelta(days=1), 'end': datetime.datetime.today()+datetime.timedelta(weeks=length)}
+                        schedule_.insert(-1, sched)
+                gap_filling(schedule_)
+
+
+
+                for sched in schedule_:
+                    sched['start'] = sched['start'].isocalendar()
+                    sched['end'] = sched['end'].isocalendar()
+            else:
+                schedule_ = [
+                    {'state': True, 'start':datetime.datetime.today().isocalendar(),
+                    'end': (datetime.datetime.today()+datetime.timedelta(weeks=length)).isocalendar() }
+                ]
+            device_['channels'].append(schedule_)
+            
+            device_['maxWeek'] = max([sched['end'][2] for sched in schedule_ ]) if len(schedule_)> 0 else 0
+        schedules.append(device_)
+
+    
+    return render_template('devices_management.html', data = schedules,current_week=current_week, max_week=max_week)
+
+'''___________________________________________________________________________________________________________________________________
+                Action functions from forms
+
+    Contains
+    tests_list_post()
+
+    cells_post()
+        allows to add a new cell type
+        allows to add  a new cell unit
+___________________________________________________________________________________________________________________________________'''
+#============TEST===============================================
+@app.route('/tests_list', methods=['POST'])
+def tests_list_post():
+    return redirect(url_for('tests_list_get'))
+
+#============CELLS===============================================
 
 @app.route('/cells', methods=['POST'])
 def cells_post():
@@ -185,40 +358,12 @@ def cells_post():
 
 
 
-@app.route('/cell_details<id>', methods=['GET'])
-def cell_details_get(id):
-    cell = Cell.query.filter_by(id=id).first()
-    model = Cell_type.query.filter_by(id=cell.model_id).first()
-
-    singles   = SingleTest.query.filter_by(cell_id=cell.id).all()
-    tests_    = [ Test.query.filter_by(id=single.test_id).first() for single in singles ]
-    tests_    = [ test.__dict__ for test in tests_]
-    campaigns = list(dict.fromkeys([ Campaign.query.filter_by(id=test['campaign_id']).first() for test in tests_]))  
-    channels  = [Channel.query.filter_by(id=single.channel_id).first() for single in singles]
-    devices   = [Device.query.filter_by(id=channel.device_id).first() for channel in channels]
-    details   = [ "device: "+devices[_].name+" channel: "+str(channels[_].chan_number) for _ in range(len(devices)) ]
-    for t, test in enumerate(tests_):
-        test['device']=details[t]
-    tests = [ [ {'name':test_['name'],'start':test_['start'],'end': test_['end'],
-             'user':User.query.filter_by(id=test_['user_id']).first().username, 'device':test_['device']  } 
-                for test_ in tests_ if test_['campaign_id'] == campaign.id ] for campaign in campaigns]
-    cell_ = {'id':cell.id, 'name':cell.name, 
-        'location': Location.query.filter_by(id = cell.location).first(), 
-        'type':Cell_type.query.filter_by(id=cell.model_id).first().model, 
-        'under_use':cell.under_use } 
-    return render_template('cell_details.html',model= model, cell=cell_, campains= campaigns, tests=tests)
 
 
-
-@app.route('/cell_scan<id>', methods=['GET'])
-def cell_scan_get(id):
-    #existing cells gnagnagn check, here if id > 4, cell is a new one
-    if id <= 4 :
-        #cell already registered
-        return redirect(url_for('tests_list_get'))
-    else:
-        form = CellForm()
-        return render_template('add_cell.html', title="Register cell", form = form)
+#============Equipement===============================================
+@app.route('/schedule', methods=['POST'])
+def bookig_post():
+    return redirect(url_for('bookig_get'))
 
 
 #============ Download files ==================================
@@ -228,16 +373,7 @@ def download_datafile(id):
     return send_file(path_, as_attachment=True)
 
 
-
-
-#============Equipement===============================================
-@app.route('/schedule', methods=['GET'])
-def bookig_get():
-    schedules = schedule.get_schedules()
-    return render_template('devices_management.html', data = schedules)
-
-
-#=============End measure
+#=============End measure =============================================
 @app.route('/schedule/end/<data>', methods=['GET'])
 def endMesure_get(data):
     data = parse_qs(data)
@@ -255,6 +391,17 @@ def book_device(data=None):
         data = None
     form = StartMeasureForm()
     return render_template('book_channel.html', data = data, form = form)
+
+# ==========================================================> function for QR code
+# @app.route('/cell_scan<id>', methods=['GET'])
+# def cell_scan_get(id):
+#     #existing cells gnagnagn check, here if id > 4, cell is a new one
+#     if id <= 4 :
+#         #cell already registered
+#         return redirect(url_for('tests_list_get'))
+#     else:
+#         form = CellForm()
+#         return render_template('add_cell.html', title="Register cell", form = form)
 
 #============Admin==============================================
 
@@ -274,24 +421,3 @@ admin.add_view(ModelView(Test, db.session))
 admin.add_view(ModelView(Campaign, db.session))
 
 
-
-
-
-#============Test===============================================
-
-@app.route('/test', methods=['GET'])
-@app.route('/test/<data>', methods=['GET'])
-def test(data=None):
-    if data is not None:
-        variables = parse_qs(data)
-        
-    else:
-        variables = None
-    dic = { "first_name": "Brian", "last_name": "Corbin","email": "corbinbs@example.com", "date_of_birth": "01/01/1970" }
-    return render_template('test.html', variables=variables, dic = dic)
-
-@app.route('/test2')
-def test2():
-    variables = { "first_name": "Brian", "last_name": "Corbin","email": "corbinbs@example.com", "date_of_birth": "01/01/1970" }
-
-    return(url_for("test", data = urlencode(variables)))

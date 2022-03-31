@@ -70,8 +70,8 @@
                 <td>{{ test.temp }}</td>
                 <td>{{ test.start }}</td>
                 <td>{{ test.end }}</td>
-                <td><a href="/download/{{ test.cycler  }}" class="text-primary">cycler </a> </br>
-                    <a href="/download/{{ test.cms  }}" class="text-primary">cms </a> </td>
+                <td> {% if test.cycler != None %}<a href="/download/{{ test.cycler  }}" class="text-primary">cycler </a> {% endif %}</br>
+                     {% if test.cms    != None %}<a href="/download/{{ test.cms  }}" class="text-primary">cms </a>       {% endif %} </td>
                 </tr>
             {% endfor %}
           {% endfor %}

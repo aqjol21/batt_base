@@ -126,7 +126,7 @@ class Cell(db.Model):
     under_use     = db.Column(db.Boolean)
     location      = db.Column(db.Integer, db.ForeignKey('location.id'))
 
-    single_test      = db.relationship('SingleTest', backref='single_test+_id',lazy='dynamic',foreign_keys="SingleTest.cell_id")
+    single_test      = db.relationship('SingleTest', backref='cell id (in use)',lazy='dynamic',foreign_keys="SingleTest.cell_id")
 
     def __repr__(self):
         return '{}'.format(self.name)  
@@ -248,6 +248,7 @@ class Location(db.Model):
     name          = db.Column(db.String(64),unique=True)
 
     cellslocation_id= db.relationship('Cell', backref='celllocation',lazy='dynamic',foreign_keys="Cell.location")
+    
     def __repr__(self):
         return '{}'.format(self.name) 
 

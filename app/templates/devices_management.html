@@ -15,8 +15,8 @@
           <thread>
             <tr>
               <th class="bg-primary" style="width: 10%"> Channel </th>
-              {% for i in range (device['maxWeek']) %}
-              <th >week {{ i+1 }}</th>
+              {% for i in range (current_week, max_week) %}
+              <th >week {{ i }}</th>
               {% endfor %}
             </tr>
           </thread>
@@ -26,9 +26,9 @@
               <td class="bg-light" data-toggle="collapse" data-target="#collapse{{device['name']+'_'+str(c)+'_'+str(s)}}">{{ c }}</td>
               {% for s, schedule in enumerate(channel) %}
                 {% if schedule['state'] == True %}
-                <td class="bg-success" colspan="{{ schedule['len'] }}" onclick= "window.location.href='{{ url_for( 'book_device' ,data = urlencode({ 'device':device['name'], 'channel':c })) }}';" style="cursor: pointer;" > Free  </td>
+                <td class="bg-success" colspan="{{ schedule['end'][1]-schedule['start'][1] }}" onclick= "window.location.href='{{ url_for( 'book_device' ,data = urlencode({ 'device':device['name'], 'channel':c })) }}';" style="cursor: pointer;" > Free  </td>
                 {% elif s == 0%}
-                <td class="bg-danger" colspan="{{ schedule['len'] }}" data-toggle="collapse" data-target="#{{device['name']+'_'+str(c)+'_'+str(s)}}" style="cursor: pointer;"> {{ schedule['test_type'] }}
+                <td class="bg-danger" colspan="{{ schedule['end'][1]-schedule['start'][1] }}" data-toggle="collapse" data-target="#{{device['name']+'_'+str(c)+'_'+str(s)}}" style="cursor: pointer;"> {{ schedule['test_type'] }}
                   <div id="{{device['name']+'_'+str(c)+'_'+str(s)}}" class="collapse in">
                     On-going test:  {{ schedule['test_name'] }}</br>
                     Type of test : {{ schedule['test_type'] }}</br>
@@ -37,7 +37,7 @@
                   </div>
                 </td>
                 {% else %}
-                <td class="bg-warning" colspan="{{ schedule['len'] }}" data-toggle="collapse" data-target="#{{device['name']+'_'+str(c)+'_'+str(s)}}" style="cursor: pointer;"> {{ schedule['test_type'] }}
+                <td class="bg-warning" colspan="{{ schedule['end'][1]-schedule['start'][1] }}" data-toggle="collapse" data-target="#{{device['name']+'_'+str(c)+'_'+str(s)}}" style="cursor: pointer;"> {{ schedule['test_type'] }}
                   <div id="{{device['name']+'_'+str(c)+'_'+str(s)}}" class="collapse in">
                     On-going test:  {{ schedule['test_name'] }}</br>
                     Type of test : {{ schedule['test_type'] }}</br>

@@ -100,7 +100,7 @@ def db_init():
     projects    = [ "PhD pii", "PhD sbh", "Batman", "Spartacus ", "Spet_characterization", "Spet_performance", "Apple_pie", "Ice_cream" ]
     temps       = [20,20,5,None,40,0,180,-20]
     starts      = ["2/16/2022","2/16/2022","2/26/2021","5/28/2021","2/9/2019","2/22/2019","3/16/2022","3/16/2022"]
-    ends        = [None,"2/18/2022","3/3/2021","6/3/2021","2/21/2019","3/5/2019",None,"3/16/2022"]
+    ends        = ["5/18/2022","2/18/2022","3/3/2021","6/3/2021","2/21/2019","3/5/2019","9/16/2022","3/16/2022"]
     types1      = ["cycling","characterization","characterization","characterization","performance","characterization","performance","cycling"]
     types2      = [None,"EIS","EIS","EIS",None,"EIS","EIS",None]
     chambers    = ["ACS-DM1200T","ACS-DM340C","ACS-DM1200T","","ACS-DM1200T","ACS-DM1200T","ESPEC-ARU1100","ESPEC-ARU1100"]
@@ -166,7 +166,7 @@ def db_init():
                             type_1=type1.id)
 
             if temps[i]  != None: test.temp = temps[i]
-            if ends[i]   == None:
+            if ends[i]   == None and test.start < datetime.datetime.today() :
                 test.active = True
             else: 
                 test.end = datetime.datetime.strptime(ends[i],"%m/%d/%Y")
