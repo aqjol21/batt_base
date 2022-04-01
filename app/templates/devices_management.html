@@ -7,6 +7,18 @@
     <div class="col-1"></div>
     <div class="col-10">
         <h1>Schedules management</h1>
+        <table class="table">
+          <thead>
+            <tr>
+              <th class="bg-success" scope="col"> </th><th class="bg-light" scope="col">Free to use</th>
+              <th class="bg-warning" scope="col"> </th><th class="bg-light" scope="col">Channel booked</th>
+              <th class="bg-danger" scope="col">  </th><th class="bg-light" scope="col">Test started</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+
         
       {% for device in data %}
       <h3>{{ device['name'] }}</h3>
@@ -16,7 +28,7 @@
             <tr>
               <th class="bg-primary" style="width: 10%"> Channel </th>
               {% for i in range (current_week, max_week) %}
-              <th >week {{ i }}</th>
+              <th colspan="7">week {{ i }}</th>
               {% endfor %}
             </tr>
           </thread>
@@ -25,22 +37,22 @@
             <tr class="accordion-toggle" >
               <td class="bg-light" data-toggle="collapse" data-target="#collapse{{device['name']+'_'+str(c)+'_'+str(s)}}">{{ c }}</td>
               {% for s, schedule in enumerate(channel) %}
-                {% if schedule['state'] == True %}
-                <td class="bg-success" colspan="{{ schedule['end'][1]-schedule['start'][1] }}" onclick= "window.location.href='{{ url_for( 'book_device' ,data = urlencode({ 'device':device['name'], 'channel':c })) }}';" style="cursor: pointer;" > Free  </td>
+                {% if schedule['booked'] == False %}
+                <td class="bg-success" colspan="{{ schedule['len'] }}" onclick= "window.location.href='{{ url_for( 'book_device' ,data = urlencode({ 'device':device['name'], 'channel':c })) }}';" style="cursor: pointer;" > Free  </td>
                 {% elif s == 0%}
-                <td class="bg-danger" colspan="{{ schedule['end'][1]-schedule['start'][1] }}" data-toggle="collapse" data-target="#{{device['name']+'_'+str(c)+'_'+str(s)}}" style="cursor: pointer;"> {{ schedule['test_type'] }}
+                <td class="bg-danger" colspan="{{ schedule['len'] }}" data-toggle="collapse" data-target="#{{device['name']+'_'+str(c)+'_'+str(s)}}" style="cursor: pointer;"> {{ schedule['type'] }}
                   <div id="{{device['name']+'_'+str(c)+'_'+str(s)}}" class="collapse in">
-                    On-going test:  {{ schedule['test_name'] }}</br>
-                    Type of test : {{ schedule['test_type'] }}</br>
+                    On-going test:  {{ schedule['name'] }}</br>
+                    Type of test : {{ schedule['type'] }}</br>
                     Started by : {{ schedule['user'] }}</br>
                     <a class="btn btn-secondary" href="{{ url_for( 'endMesure_get' ,data = urlencode({ 'device':device['name'], 'channel':c, 'test':schedule['test_id'] }) ) }}" class="text-dark">Terminate</a>
                   </div>
                 </td>
                 {% else %}
-                <td class="bg-warning" colspan="{{ schedule['end'][1]-schedule['start'][1] }}" data-toggle="collapse" data-target="#{{device['name']+'_'+str(c)+'_'+str(s)}}" style="cursor: pointer;"> {{ schedule['test_type'] }}
+                <td class="bg-warning" colspan="{{ schedule['len'] }}" data-toggle="collapse" data-target="#{{device['name']+'_'+str(c)+'_'+str(s)}}" style="cursor: pointer;"> {{ schedule['type'] }}
                   <div id="{{device['name']+'_'+str(c)+'_'+str(s)}}" class="collapse in">
-                    On-going test:  {{ schedule['test_name'] }}</br>
-                    Type of test : {{ schedule['test_type'] }}</br>
+                    On-going test:  {{ schedule['name'] }}</br>
+                    Type of test : {{ schedule['type'] }}</br>
                     Started by : {{ schedule['user'] }}</br>
                     <a class="btn btn-secondary" href="{{ url_for( 'endMesure_get' ,data = urlencode({ 'device':device['name'], 'channel':c, 'test':schedule['test_id'] }) ) }}" class="text-dark">Terminate</a>
                   </div>

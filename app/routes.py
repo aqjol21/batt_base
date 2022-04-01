@@ -190,98 +190,110 @@ def bookig_get():
     current_week = datetime.datetime.today().isocalendar()[1]
     length =10
     max_week     = current_week + length
+
     # schedules = []
     # for device in Device.query.all():
     #     device_ ={'name':device.name, 'channels':[]}
-    #     for channel in Channel.query.filter_by(device_id=device.id).all():
-    #         singletests = SingleTest.query.filter_by(channel_id=channel.id).all()
-    #         tests = [Test.query.filter_by(id=single.test_id).first() for single in singletests]
-    #         schedule_ = []
-    #         for test in tests:
-    #             if test.end != None and test.end < datetime.datetime.today():
-    #                 pass
-    #             elif test.end != None:
-    #                 sched = {"test_name":test.name,
-    #                         "test_type":test.type_1,
-    #                         "test_type2":test.type_2,
-    #                         "user":User.query.filter_by(id = test.user_id).first().username,
-    #                         "test_id":test.id,
-    #                         'state':False
-    #                         }
-    #                 sched['start'] = test.start.isocalendar() if test.start > datetime.datetime.today() else datetime.datetime.today()
-    #                 sched['end']   = test.end
-    #                 schedule_.append(sched)
+    #     devtype = [type_.name for type_ in device.type]
+    #     if "cycler" in devtype[0]:
+            
+    #         for channel in Channel.query.filter_by(device_id=device.id).all():
+    #             singletests = SingleTest.query.filter_by(channel_id=channel.id).all()
+    #             schedule = [ {'state':True, 'len':1} for _ in range(length*7+1)]
+    #             today = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+    #             for test in [Test.query.filter_by(id=single.test_id).first() for single in singletests]:
+    #                 if test.end > today:
+    #                     user  = User.query.filter_by(id=test.user_id).first().username
+    #                     type1 = Test_type.query.filter_by(id=test.type_1).first()
+    #                     type2 = Test_type.query.filter_by(id=test.type_2).first()
+    #                     start = test.start if test.start > today else today
+    #                     end = test.end if test.end <today+datetime.timedelta(weeks=length) else today+datetime.timedelta(weeks=length)
+    #                     # print(start, end)
+    #                     xstart = (start-today).days
+    #                     xend   = (end-today).days
+    #                     # print(xstart,xend)
+    #                     # for x in range (xstart, xend):
+    #                     #     schedule[x]['start']=x
+    #                     #     schedule[x]['end']=x+1
+    #                     #     schedule[x]['state']=False
+    #                     #     schedule[x]['test']=test.id
+    #                     #     schedule[x]['name']=test.name
+    #                     #     schedule[x]['user']=user
+    #                     #     schedule[x]['type']=type1.name + " "+ type2.name if type2 != None else type1.name
 
-    #         if len(schedule_) > 0:
-    #             schedule_ = sorted(schedule_, key=lambda x: x['start'])
-    #             if schedule_[0]['start'] > datetime.datetime.today():
-    #                 sched={'state': True, 'start': datetime.datetime.today(), 'end': datetime.datetime.today()+datetime.timedelta(weeks=length)}
-    #                 schedule_.insert(0, sched)
+
+    #                     for x in range (xstart+1, xend+1,-1): del schedule[x]
+    #                     schedule[xstart]['state']=False
+    #                     schedule[xstart]['test']=test.id
+    #                     schedule[xstart]['name']=test.name
+    #                     schedule[xstart]['user']=user
+    #                     schedule[xstart]['type']=type1.name + " "+ type2.name if type2 != None else type1.name
+    #                     schedule[xstart]['len']= xend+1-xstart
+    #                     schedule[xstart]['type']=type1.name + " "+ type2.name if type2 != None else type1.name
+
+    #             device_['channels'].append(schedule)
                 
-    #             if schedule_[-1]['end'] < datetime.datetime.today()+datetime.timedelta(weeks=length):
-    #                 sched={'state': True, 'start': schedule_[-1]['end']+datetime.timedelta(days=1), 'end': datetime.datetime.today()+datetime.timedelta(weeks=length)}
-    #                 schedule_.insert(-1, sched)
-
-    #             gap_filling(schedule_)
-
-    #             for sched in schedule_:
-    #                 sched['start'] = sched['start'].isocalendar()
-    #                 sched['end'] = sched['end'].isocalendar()
-    #         else:
-    #             schedule_ = [
-    #                 {'state': True, 'start':datetime.datetime.today().isocalendar(),
-    #                 'end': (datetime.datetime.today()+datetime.timedelta(weeks=length)).isocalendar() } ]
-
-    #         device_['channels'].append(schedule_)
-    #         device_['maxWeek'] = max([sched['end'][2] for sched in schedule_ ]) if len(schedule_)> 0 else 0
-    # schedules.append(device_)
-
-
+                
+    #         schedules.append(device_)
+    length = 10
+    # Init the table
     schedules = []
     for device in Device.query.all():
-        device_ ={'name':device.name, 'channels':[]}
+        device_ ={'name':device.name, 'channels':[], 'len': 1}
         for channel in Channel.query.filter_by(device_id=device.id).all():
-            singletests = SingleTest.query.filter_by(channel_id=channel.id).all()
-            tests = [Test.query.filter_by(id=single.test_id).first() for single in singletests]
-            schedule_ = []
-            for test in tests:
-                if test.end != None and test.end < datetime.datetime.today():
-                    pass
-                elif test.end != None:
-                    sched = {"test_name":test.name,
-                            "test_type":test.type_1,
-                            "test_type2":test.type_2,
-                            "user":User.query.filter_by(id = test.user_id).first().username,
-                            "test_id":test.id
-                            }
-                    sched['start'] = test.start.isocalendar() if test.start > datetime.datetime.today() else datetime.datetime.today()
-                    sched['end']   = test.end
-                    schedule_.append(sched)
-
-            if len(schedule_) > 0:
-                schedule_ = sorted(schedule_, key=lambda x: x['start'])
-                if schedule_[0]['start'] > datetime.datetime.today():
-                    sched={'state': True, 'start': datetime.datetime.today(), 'end': datetime.datetime.today()+datetime.timedelta(weeks=length)}
-                    schedule_.insert(0, sched)
-                if schedule_[-1]['end'] < datetime.datetime.today()+datetime.timedelta(weeks=length):
-                        sched={'state': True, 'start': schedule_[-1]['end']+datetime.timedelta(days=1), 'end': datetime.datetime.today()+datetime.timedelta(weeks=length)}
-                        schedule_.insert(-1, sched)
-                gap_filling(schedule_)
-
-
-
-                for sched in schedule_:
-                    sched['start'] = sched['start'].isocalendar()
-                    sched['end'] = sched['end'].isocalendar()
-            else:
-                schedule_ = [
-                    {'state': True, 'start':datetime.datetime.today().isocalendar(),
-                    'end': (datetime.datetime.today()+datetime.timedelta(weeks=length)).isocalendar() }
-                ]
-            device_['channels'].append(schedule_)
-            
-            device_['maxWeek'] = max([sched['end'][2] for sched in schedule_ ]) if len(schedule_)> 0 else 0
+            schedule = [ {'booked':False, 'len':1} for _ in range(length*7+1)]
+            device_['channels'].append(schedule)
         schedules.append(device_)
+    # print(schedules[0])
+
+    # modify the content based on tests
+    today = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+    tests = Test.query.filter(Test.end >= today).all()
+    for test in tests:
+        user  = User.query.filter_by(id=test.user_id).first().username
+        type1 = Test_type.query.filter_by(id=test.type_1).first()
+        type2 = Test_type.query.filter_by(id=test.type_2).first()
+        start = test.start if test.start > today else today
+        end = test.end if test.end <today+datetime.timedelta(weeks=length) else today+datetime.timedelta(weeks=length)
+        # print(start, end)
+        xstart = (start-today).days
+        xend   = (end-today).days
+        # book chamber if used
+        for device in test.devices:
+            for x in range(xstart, xend+1):
+                cell = schedules[next((i for i, dev in enumerate(schedules) if dev['name']==device.name),None)]['channels'][0][x]
+                cell['booked']=True
+                cell['test']=test.id                                                    
+                cell['name']=test.name                                                      
+                cell['user']=user                                                          
+                cell['type']=type1.name + " "+ type2.name if type2 != None else type1.name
+        # book cyclers
+        for single in SingleTest.query.filter_by(test_id=test.id).all():
+            channel = Channel.query.filter_by(id=single.channel_id).first()
+            device = Device.query.filter_by(id=channel.device_id).first()
+            for x in range(xstart, xend+1):
+                channel = Channel.query.filter_by(id=single.channel_id).first()
+                device  = Device.query.filter_by(id=channel.device_id).first()
+                for x in range(xstart, xend+1):
+                    cell = schedules[next((i for i, dev in enumerate(schedules) if dev['name']==device.name),None)]['channels'][channel.chan_number][x]
+                    cell['booked']=True
+                    cell['test']=test.id                                                    
+                    cell['name']=test.name                                                      
+                    cell['user']=user                                                          
+                    cell['type']=type1.name + " "+ type2.name if type2 != None else type1.name
+
+    # regroup the table into element only
+    for device in schedules:
+        for planning in device['channels']:
+            print(device['name'])
+            for i in range( len(planning)-1,0,-1):
+                if planning[i]['booked'] ==planning[i-1]['booked'] and planning[i]['booked']==False:
+                    planning[i-1]['len']+= planning[i]['len']
+                    del planning[i]
+                elif planning[i]['booked']==True:
+                    if planning[i]['test']==planning[i-1]['test']:
+                        planning[i-1]['len']+= planning[i]['len']
+                        del planning[i]
 
     
     return render_template('devices_management.html', data = schedules,current_week=current_week, max_week=max_week)

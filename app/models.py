@@ -154,7 +154,7 @@ class Device(db.Model):
     datasheet_link  = db.Column(db.String(64))
     details         = db.Column(db.String(64))
 
-    type            = db.relationship("Device_type", secondary=device_type_identifier)
+    type            = db.relationship("Device_type", secondary=device_type_identifier,overlaps="type")
     channel_id      = db.relationship('Channel', backref='device_channel',lazy='dynamic',foreign_keys="Channel.device_id")
 
     def __repr__(self):
