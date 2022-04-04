@@ -9,7 +9,7 @@ from unicodedata import name
 import time
 from xml.dom.pulldom import START_DOCUMENT
 import datetime
-import pandas as pd
+# import pandas as pd
 from os import getcwd, path, listdir
 
 users        = ["Pietro", "Emil", "Enrico","Shubham","Chiara","Guillaume"]

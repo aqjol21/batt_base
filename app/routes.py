@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from flask import render_template,url_for, redirect,  send_file, flash
+from flask import render_template,url_for, redirect,  send_file, flash, jsonify
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 
@@ -11,11 +11,10 @@ from app.models import User, Cell_type, Cell, Channel, Device, Test, Campaign, T
 from os import getcwd, path
 from urllib.parse import urlencode, parse_qs
 import datetime
+from math import floor
+from app.forms import CellTypeForm,CellForm,EndMeasureForm, addCampaignForm,addProjectForm, addTestForm,selectDeviceForm
 
-from app.forms import CellTypeForm,CellForm,DeviceForm,StartMeasureForm,EndMeasureForm, displayScheduleControl
 
-###### DESIGN & DEBUG #########
-from app.fakeData import schedule
 ##############################
 
 @app.context_processor
@@ -29,6 +28,10 @@ def inject_str():
 @app.context_processor
 def inject_urlencode():
     return dict(urlencode=urlencode)    
+
+@app.context_processor
+def inject_floor():
+    return dict(floor=floor)  
 
 
 def gap_filling(A):
@@ -187,55 +190,9 @@ def cell_details_get(id):
 #============Equipement===============================================
 @app.route('/schedule', methods=['GET'])
 def bookig_get():
-    current_week = datetime.datetime.today().isocalendar()[1]
+    current_year, current_week = datetime.datetime.today().isocalendar()[:2]
     length =10
     max_week     = current_week + length
-
-    # schedules = []
-    # for device in Device.query.all():
-    #     device_ ={'name':device.name, 'channels':[]}
-    #     devtype = [type_.name for type_ in device.type]
-    #     if "cycler" in devtype[0]:
-            
-    #         for channel in Channel.query.filter_by(device_id=device.id).all():
-    #             singletests = SingleTest.query.filter_by(channel_id=channel.id).all()
-    #             schedule = [ {'state':True, 'len':1} for _ in range(length*7+1)]
-    #             today = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
-    #             for test in [Test.query.filter_by(id=single.test_id).first() for single in singletests]:
-    #                 if test.end > today:
-    #                     user  = User.query.filter_by(id=test.user_id).first().username
-    #                     type1 = Test_type.query.filter_by(id=test.type_1).first()
-    #                     type2 = Test_type.query.filter_by(id=test.type_2).first()
-    #                     start = test.start if test.start > today else today
-    #                     end = test.end if test.end <today+datetime.timedelta(weeks=length) else today+datetime.timedelta(weeks=length)
-    #                     # print(start, end)
-    #                     xstart = (start-today).days
-    #                     xend   = (end-today).days
-    #                     # print(xstart,xend)
-    #                     # for x in range (xstart, xend):
-    #                     #     schedule[x]['start']=x
-    #                     #     schedule[x]['end']=x+1
-    #                     #     schedule[x]['state']=False
-    #                     #     schedule[x]['test']=test.id
-    #                     #     schedule[x]['name']=test.name
-    #                     #     schedule[x]['user']=user
-    #                     #     schedule[x]['type']=type1.name + " "+ type2.name if type2 != None else type1.name
-
-
-    #                     for x in range (xstart+1, xend+1,-1): del schedule[x]
-    #                     schedule[xstart]['state']=False
-    #                     schedule[xstart]['test']=test.id
-    #                     schedule[xstart]['name']=test.name
-    #                     schedule[xstart]['user']=user
-    #                     schedule[xstart]['type']=type1.name + " "+ type2.name if type2 != None else type1.name
-    #                     schedule[xstart]['len']= xend+1-xstart
-    #                     schedule[xstart]['type']=type1.name + " "+ type2.name if type2 != None else type1.name
-
-    #             device_['channels'].append(schedule)
-                
-                
-    #         schedules.append(device_)
-    length = 10
     # Init the table
     schedules = []
     for device in Device.query.all():
@@ -296,7 +253,43 @@ def bookig_get():
                         del planning[i]
 
     
-    return render_template('devices_management.html', data = schedules,current_week=current_week, max_week=max_week)
+    return render_template('devices_management.html', data = schedules,current_week=current_week, max_week=max_week,current_year=current_year)
+
+
+#==========Add new booking ===========================================
+@app.route('/booking', methods=['GET'])
+@app.route('/booking/<data>', methods=['GET'])
+def book_device(data=None):
+    forms = {   'addCampaign'  : addCampaignForm(),
+                'addProject'   : addProjectForm(),
+                'addTest'      : addTestForm(),
+                'selectDevice' : selectDeviceForm()
+            }
+
+    test_types                               = [(type.id, type.name) for type in Test_type.query.all()]
+    forms['addTest'].type_1.choices          = test_types
+    forms['addTest'].type_2.choices          = test_types
+    projects                                 = [(project.id, project.name) for project in Project.query.all()]
+    forms['addCampaign'].project.choices     = projects
+    campaigns                                = [(campaign.id, campaign.name) for campaign in Campaign.query.all()]
+    forms['addTest'].campaign.choices        = campaigns
+    devices                                  = [(device.id, device.name) for device in Device.query.all()]
+    forms['selectDevice'].device.choices     = devices
+    channels                                 = [(channel.id, channel.chan_number) for channel in Channel.query.filter_by(device_id=Device.query.first().id).all()]
+    forms['selectDevice'].channel.choices     = channels
+    
+    if data is not None:
+        data = parse_qs(data)
+    else:
+        data = None
+
+    return render_template('book_channel.html', data = data, forms = forms)
+
+@app.route('/booking/channel/<device>')
+def channels(device):
+    channels =[ {'id':channel.id, 'name':channel.chan_number} for channel in Channel.query.filter_by(device_id=int(device)).all() ]
+    return jsonify({'channels':channels})
+
 
 '''___________________________________________________________________________________________________________________________________
                 Action functions from forms
@@ -394,16 +387,20 @@ def endMesure_get(data):
 
 
 #============Bookings=================================================
-@app.route('/booking', methods=['GET'])
-@app.route('/booking/<data>', methods=['GET'])
-def book_device(data=None):
-    if data is not None:
-        data = parse_qs(data)
-    else:
-        data = None
-    form = StartMeasureForm()
-    return render_template('book_channel.html', data = data, form = form)
 
+@app.route('/booking', methods=['POST'])
+def book_device_post():
+    forms = {   'addCampaign'  : addCampaignForm(),
+                'addProject'   : addProjectForm(),
+                'addTest'      : addTestForm(),
+                'selectDevice' : selectDeviceForm()
+            }
+
+    # for form in forms:
+    #     if form.validate_on_submit():
+    #         flash("submit hit")
+
+    return redirect(url_for('book_device'))
 # ==========================================================> function for QR code
 # @app.route('/cell_scan<id>', methods=['GET'])
 # def cell_scan_get(id):

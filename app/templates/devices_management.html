@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 
-{% block content %}
+{% block main %}
 
   <div class="row container-fluid mt-3">
     <div class="col-1"></div>
@@ -28,7 +28,7 @@
             <tr>
               <th class="bg-primary" style="width: 10%"> Channel </th>
               {% for i in range (current_week, max_week) %}
-              <th colspan="7">week {{ i }}</th>
+              <th colspan="7">{{current_year+ floor(i/52) }} </br>week {{ i%52 }}</th>
               {% endfor %}
             </tr>
           </thread>

@@ -1,24 +1,78 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 
-{% block content %}
 
 
-<div class="row container-fluid mt-3">
+{% block main %}
+<div class="row container-fluid mt-3 mb-3">
     <div class="col-1"></div>
     <div class="col-10">
-        <h1>Test Booking</h1>
-        {% if data['device'] != None%}
-            {% for d, device in enumerate(data['device']) %}
-                Device selected: {{device}} </br>
-       
-                {% if data['channel'][d] != None %}
-                    {% for channel in data['channel'][d] %}
-                         Channel {{ channel }} selected </br>
-                    {% endfor %}
-                {% endif %}
-            {% endfor %}
-        {% endif %}
+        <div class="row container-fluid">
+            <h1>Test Booking</h1>
+            {% if data['device'] != None%}
+            THIS IS INFORMATIVE AND WILL DISAPEAR ONCE THE FEATURE IS IMPLEMENTED
+                {% for d, device in enumerate(data['device']) %}
+                    Device selected: {{device}} </br>
+
+                    {% if data['channel'][d] != None %}
+                        {% for channel in data['channel'][d] %}
+                            Channel {{ channel }} selected </br>
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+
+            <div class="row container-fluid">
+                <div class="col-8">
+                    <h2>Schedule a new test</h2>
+                    {{ wtf.quick_form(forms['addTest'] , form_type="vertical") }}
+                </div>
+                <div class="col-4">
+                    <h2> Register a new Project </h2>
+                    {{ wtf.quick_form(forms['addProject'] , form_type="vertical") }}
+                    <div class="mt-3"></div>
+                    <h2> Register a new Campaign </h2>
+                    {{ wtf.quick_form(forms['addCampaign'] , form_type="vertical") }}
+                </div>
+            </div>
+        </div>
+        <div class="row container-fluid mb-3 mt-6">
+            <div class="col-8">
+                <h3>Channels selection</h3>
+                Here display table of already selected Channels
+            </div>
+            <div class="col-4">
+                <h3>Additional channel registration form</h3>
+                <form method="POST">
+                    {{ forms['selectDevice'].csrf_token }}
+                    {{ wtf.form_field(forms['selectDevice'].device, class='form-control') }}
+                    {{ wtf.form_field(forms['selectDevice'].channel, class='form-control') }}
+                    {{ wtf.form_field(forms['selectDevice'].submit, class='form-control') }}
+                </form>
+                <script>
+                    let device_select = document.getElementById('device');
+                    let channel_select = document.getElementById('channel');
+                    device_select.onchange = function(){
+                        device = device_select.value;
+                        console.log(device)
+                        fetch('/booking/channel/'+device).then(function(response) {
+                            response.json().then(function(data){
+                                console.table(data);
+                                let optionHTML='';
+                                for (let chan of data.channels){
+                                optionHTML+= '<option value="'+chan.id+'">'+chan.name + '</option>';
+                                }
+                                console.log(optionHTML)
+                                channel_select.innerHTML = optionHTML;
+                            }) ;
+                        });
+                    }
+                </script>
+            </div>
+            
+        </div>
+        
 
     </div>
     <div class="col-1"></div>

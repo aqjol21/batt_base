@@ -1,3 +1,4 @@
+from curses import flash
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, DateField, TextAreaField, IntegerField, DecimalField
 from wtforms.validators import DataRequired
@@ -39,26 +40,54 @@ class CellForm(FlaskForm):
     location      = SelectField("Storage location", coerce=int, validators=[DataRequired()])
     submit        = SubmitField('Add cell')
 
-class DeviceForm(FlaskForm):
-    name            = StringField('Name', validators=[DataRequired()])
-    number_channels = IntegerField('How many channels? (min 1)', validators=[DataRequired()])
-    company         = SelectField("Which manufacturer?", choices=[('0','Arbin'),('1','Biologics'),('2','EIS_name')])
-    submit          = SubmitField('Add device')
+# class DeviceForm(FlaskForm):
+#     name            = StringField('Name', validators=[DataRequired()])
+#     number_channels = IntegerField('How many channels? (min 1)', validators=[DataRequired()])
+#     company         = SelectField("Which manufacturer?", choices=[('0','Arbin'),('1','Biologics'),('2','EIS_name')])
+#     submit          = SubmitField('Add device')
 
-class StartMeasureForm(FlaskForm):
-    name          = StringField('Name', validators=[DataRequired()])
-    description   = TextAreaField('Comments')
-    start_data    = DateField("Start date",validators=[DataRequired()])
-    end_date      = DateField("Projected end date")
-    device_id     = SelectField("Select device", coerce=int, validators=[DataRequired()])
-    channel_id    = SelectField("Select channel", coerce=int, validators=[DataRequired()])
+# class StartMeasureForm(FlaskForm):
+#     name          = StringField('Name', validators=[DataRequired()])
+#     description   = TextAreaField('Comments')
+#     start_data    = DateField("Start date",validators=[DataRequired()])
+#     end_date      = DateField("Projected end date")
+#     device_id     = SelectField("Select device", coerce=int, validators=[DataRequired()])
+#     channel_id    = SelectField("Select channel", coerce=int, validators=[DataRequired()])
 
-    submit        = SubmitField('start cell')
+#     submit        = SubmitField('start cell')
 
 class EndMeasureForm(FlaskForm):
     submit        = SubmitField('start cell')
 
-class displayScheduleControl(FlaskForm):
-    time_res      = SelectField( choices=[('0','day'),('1','week'),('2','month')])
-    submit        = SubmitField('Change')
+# class displayScheduleControl(FlaskForm):
+#     time_res      = SelectField( choices=[('0','day'),('1','week'),('2','month')])
+#     submit        = SubmitField('Change')
+
+class addCampaignForm(FlaskForm):
+    name        = StringField('Name', validators=[DataRequired()])
+    description = TextAreaField('Comments')
+    project     = SelectField("Select project", coerce=int, validators=[DataRequired()])
+    submit      = SubmitField('Add campaign')
+
+class addProjectForm(FlaskForm):
+    name        = StringField('Name', validators=[DataRequired()])
+    description = TextAreaField('Comments')
+    partners    = StringField('Partners', validators=[DataRequired()])
+    submit      = SubmitField('Add project')
+
+class addTestForm(FlaskForm):
+    name        = StringField('Name', validators=[DataRequired()])
+    description = TextAreaField('Comments')
+    start       = DateField("Start date",validators=[DataRequired()])
+    end         = DateField("Projected end date",validators=[DataRequired()])
+    temperature = DecimalField('Temperature (leave empty if ambiant)')
+    campaign    = SelectField("Select campaign", coerce=int, validators=[DataRequired()])
+    type_1      = SelectField("Select type", coerce=int, validators=[DataRequired()])
+    type_2      = SelectField("Select additional type (optional)", coerce=int)
+    submit      = SubmitField('Schedule test')
+
+class selectDeviceForm(FlaskForm):
+    device      = SelectField("Select device", coerce=int, validators=[DataRequired()])
+    channel     = SelectField("Select channel", coerce=int, validators=[DataRequired()])
+    submit      = SubmitField('Add channel')
 
