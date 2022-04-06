@@ -26,7 +26,36 @@
             <div class="row container-fluid">
                 <div class="col-8">
                     <h2>Schedule a new test</h2>
-                    {{ wtf.quick_form(forms['addTest'] , form_type="vertical") }}
+                    <form method="POST">
+                    {{ forms['addTest'].csrf_token }}
+                    {{ wtf.form_field(forms['addTest'].name, class='form-control') }}
+                    {{ wtf.form_field(forms['addTest'].description, class='form-control') }}
+                    {{ wtf.form_field(forms['addTest'].start, class='form-control') }}
+                    {{ wtf.form_field(forms['addTest'].end, class='form-control') }}
+                    {{ wtf.form_field(forms['addTest'].campaign, class='form-control') }}
+                    {{ wtf.form_field(forms['addTest'].type_1, class='form-control') }}
+                    {{ wtf.form_field(forms['addTest'].type_2, class='form-control') }}
+                    {{ wtf.form_field(forms['addTest'].submit, class='form-control') }}
+                    </form>
+                    <!-- <script>
+                        let type_1_select = document.getElementById('type_1');
+                        let type_2_select = document.getElementById('type_2');
+                        type_1_select.onchange = function(){
+                            type_1 = type_1_select.value;
+                            console.log(device)
+                            fetch('/booking/type/'+type_1).then(function(response) {
+                                response.json().then(function(data){
+                                    console.table(data);
+                                    let optionHTML='';
+                                    for (let typ of data.types){
+                                    optionHTML+= '<option value="'+typ.id+'">'+typ.name + '</option>';
+                                    }
+                                    console.log(optionHTML)
+                                    type_2_select.innerHTML = optionHTML;
+                                }) ;
+                            });
+                        }
+                    </script> -->
                 </div>
                 <div class="col-4">
                     <h2> Register a new Project </h2>
@@ -40,7 +69,33 @@
         <div class="row container-fluid mb-3 mt-6">
             <div class="col-8">
                 <h3>Channels selection</h3>
-                Here display table of already selected Channels
+                
+                {% if channelList|length > 0 %}
+                <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Device</th>
+                        <th scope="col">Channel</th>
+                        <th scope="col">Cell</th>
+                      </tr>
+                    </thead>
+                    <tbody> 
+                        {% for c,chanel in enumerate(channelList) %}
+                      <tr>
+                        <td>{{c}}</td>
+                        <td>{{ chanel.device }}</td>
+                        <td>{{ chanel.channel }}</td>
+                        <td>{{ chanel.cell }}</td>
+                      </tr>
+                      {% endfor %}
+                      
+                    </tbody>
+                  </table>
+                {% else %}
+                <h4>No channel seletected so far</h4>
+                {% endif %}
+
             </div>
             <div class="col-4">
                 <h3>Additional channel registration form</h3>
@@ -48,6 +103,7 @@
                     {{ forms['selectDevice'].csrf_token }}
                     {{ wtf.form_field(forms['selectDevice'].device, class='form-control') }}
                     {{ wtf.form_field(forms['selectDevice'].channel, class='form-control') }}
+                    {{ wtf.form_field(forms['selectDevice'].cell, class='form-control') }}
                     {{ wtf.form_field(forms['selectDevice'].submit, class='form-control') }}
                 </form>
                 <script>

@@ -1,21 +1,33 @@
-from datetime import date, datetime
-from flask import render_template,url_for, redirect,  send_file, flash, jsonify
-from flask_admin import Admin
-from flask_admin.contrib.sqla import ModelView
+#!/usr/bin/env python
+"""
+__author__ = "Guillaume"
+__copyright__ = "tbd"
+__credits__ = ["Pietro"]
+__license__ = "tbd"
+__version__ = "0.0.1"
+__maintainer__ = "Guillaume"
+__email__ = "guillaume.thenaisie@csem.ch"
+__status__ = "Development"
+"""
 
-from sqlalchemy import inspect
-
-from app import app, db
-from app.models import User, Cell_type, Cell, Channel, Device, Test, Campaign, Test_type, Project, SingleTest, Device_type, Location
-
+# general libraries imports_________________________________________________________
 from os import getcwd, path
 from urllib.parse import urlencode, parse_qs
 import datetime
+from datetime import date, datetime
 from math import floor
-from app.forms import CellTypeForm,CellForm,EndMeasureForm, addCampaignForm,addProjectForm, addTestForm,selectDeviceForm
+# Flask-specific libraries + setups_________________________________________________
+from flask import render_template,url_for, redirect,  send_file, flash, jsonify
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
+# from flask_login import current_user, login_user, logout_user, login_required
+from sqlalchemy import inspect
+from app import app, db, session
+# Home-baked modules_________________________________________________________________
+from app.models import *  # database models
+from app.forms import *   # webforms
 
-
-##############################
+# context processor setup for easier template management_____________________________
 
 @app.context_processor
 def inject_enumerate():
@@ -32,6 +44,7 @@ def inject_urlencode():
 @app.context_processor
 def inject_floor():
     return dict(floor=floor)  
+
 
 
 def gap_filling(A):
@@ -187,7 +200,7 @@ def cell_details_get(id):
         'under_use':cell.under_use } 
     return render_template('cell_details.html',model= model, cell=cell_, campains= campaigns, tests=tests)
 
-#============Equipement===============================================
+#============SCHEDULE & EQUIPMENT=====================================
 @app.route('/schedule', methods=['GET'])
 def bookig_get():
     current_year, current_week = datetime.datetime.today().isocalendar()[:2]
@@ -256,7 +269,7 @@ def bookig_get():
     return render_template('devices_management.html', data = schedules,current_week=current_week, max_week=max_week,current_year=current_year)
 
 
-#==========Add new booking ===========================================
+#==========SCHEDULE NEW TEST==========================================
 @app.route('/booking', methods=['GET'])
 @app.route('/booking/<data>', methods=['GET'])
 def book_device(data=None):
@@ -268,7 +281,9 @@ def book_device(data=None):
 
     test_types                               = [(type.id, type.name) for type in Test_type.query.all()]
     forms['addTest'].type_1.choices          = test_types
-    forms['addTest'].type_2.choices          = test_types
+    test_types2                              = test_types.copy()
+    test_types2[0]                           = (0, "")
+    forms['addTest'].type_2.choices          = test_types2
     projects                                 = [(project.id, project.name) for project in Project.query.all()]
     forms['addCampaign'].project.choices     = projects
     campaigns                                = [(campaign.id, campaign.name) for campaign in Campaign.query.all()]
@@ -277,20 +292,33 @@ def book_device(data=None):
     forms['selectDevice'].device.choices     = devices
     channels                                 = [(channel.id, channel.chan_number) for channel in Channel.query.filter_by(device_id=Device.query.first().id).all()]
     forms['selectDevice'].channel.choices     = channels
-    
+    cells                                    = [(cell.id, cell.name) for cell in Cell.query.all()]
+    forms['selectDevice'].cell.choices       = cells
+
+    if 'channel_list' in session:
+        channelList = session['channel_list']
+    else:
+        channelList = []
+
     if data is not None:
         data = parse_qs(data)
     else:
         data = None
 
-    return render_template('book_channel.html', data = data, forms = forms)
+    return render_template('book_channel.html', data = data, forms = forms, channelList=channelList)
 
 @app.route('/booking/channel/<device>')
 def channels(device):
     channels =[ {'id':channel.id, 'name':channel.chan_number} for channel in Channel.query.filter_by(device_id=int(device)).all() ]
     return jsonify({'channels':channels})
 
-
+# @app.route('/booking/type/<test_type>')
+# def types(test_type):
+#     type_1 = Device.query.filter_by(id=int(test_type)).first()
+#     print(type_1)
+#     types = [ typ for typ in[ {'id':typ.id, 'name':typ.name} for typ in Test_type.query.all()] if typ['id']!=test_type]
+#     print("type changed ", test_type, types)
+#     return jsonify({'types':types})
 '''___________________________________________________________________________________________________________________________________
                 Action functions from forms
 
@@ -396,9 +424,85 @@ def book_device_post():
                 'selectDevice' : selectDeviceForm()
             }
 
-    # for form in forms:
-    #     if form.validate_on_submit():
-    #         flash("submit hit")
+    test_types                               = [(type.id, type.name) for type in Test_type.query.all()]
+    forms['addTest'].type_1.choices          = test_types
+    test_types2 = test_types.copy()
+    test_types2[0] = (0, "")
+    forms['addTest'].type_2.choices          = test_types2
+    projects                                 = [(project.id, project.name) for project in Project.query.all()]
+    forms['addCampaign'].project.choices     = projects
+    campaigns                                = [(campaign.id, campaign.name) for campaign in Campaign.query.all()]
+    forms['addTest'].campaign.choices        = campaigns
+    devices                                  = [(device.id, device.name) for device in Device.query.all()]
+    forms['selectDevice'].device.choices     = devices
+    channels                                 = [(channel.id, channel.chan_number) for channel in Channel.query.filter_by(device_id=Device.query.first().id).all()]
+    forms['selectDevice'].channel.choices    = channels
+    cells                                    = [(cell.id, cell.name) for cell in Cell.query.all()]
+    forms['selectDevice'].cell.choices       = cells
+
+    if 'channel_list' in session:
+        channelList = session['channel_list']
+    else:
+        channelList = []
+
+    if forms['selectDevice'].validate():
+        # flash("device validated")
+        device = Device.query.filter_by(id = forms['selectDevice'].device.data).first()
+        channel = Channel.query.filter_by(id =forms['selectDevice'].channel.data ).first()
+        cell    = Cell.query.filter_by(id = forms['selectDevice'].cell.data).first()
+        if len(channelList)> 0:
+            for chan in channelList:
+                if chan['device'] == device.name and chan['channel']==channel.chan_number :
+                    print("device channel already in the list")
+                    break
+                elif chan['cell']== cell.name:
+                    print("cell already in the list")
+                    break
+                else:
+                    channelList.append({'device':device.name,
+                                        'channel':channel.chan_number,
+                                        'cell':cell.name})
+        else:
+            channelList.append({'device':device.name,
+                                        'channel':channel.chan_number,
+                                        'cell':cell.name})
+        session.modified = True
+        session['channel_list'] = channelList
+    
+    if forms['addTest'].validate():
+        # flash("test validated")
+        if len(channelList)<1:
+            flash("empty list, select channel first")
+    
+    if forms['addCampaign'].validate():
+        # flash ("campaign added")
+        campaign_names = [campaign.name for campaign in Campaign.query.all()]
+        if forms['addCampaign'].name.data in campaign_names:
+            print("Error campaign name already exists")
+        else:
+            campaign = Campaign(name = forms['addCampaign'].name.data,
+                                project=forms['addCampaign'].project.data)
+            campaign.description = forms['addCampaign'].description.data if forms['addCampaign'].description.data else None
+            db.session.add(campaign)
+            db.session.commit()
+            print("campaign added")
+
+
+
+    if forms['addProject'].validate():
+        # flash ("project added")
+        projects_names = [project.name for project in Project.query.all()]
+        if forms['addProject'].name.data in projects_names:
+            print("Error project name already exists")
+        else:
+            project = Project(name = forms['addProject'].name.data)
+            project.description = forms['addProject'].description.data if forms['addProject'].description.data else None
+            project.partners = forms['addProject'].partners.data
+            db.session.add(project)
+            db.session.commit()
+            print("project added")
+
+
 
     return redirect(url_for('book_device'))
 # ==========================================================> function for QR code
@@ -430,3 +534,36 @@ admin.add_view(ModelView(Test, db.session))
 admin.add_view(ModelView(Campaign, db.session))
 
 
+
+@app.route("/test", methods=['POST', 'GET'])
+def test():
+    
+    forms = { 
+                'addTest'      : testTestForm(),
+                'selectDevice' : selectDeviceForm()
+            }
+    test_types                               = [(type.id, type.name) for type in Test_type.query.all()]
+    forms['addTest'].type_1.choices          = test_types
+    forms['addTest'].type_2.choices          = test_types
+    # projects                                 = [(project.id, project.name) for project in Project.query.all()]
+    # forms['addCampaign'].project.choices     = projects
+    campaigns                                = [(campaign.id, campaign.name) for campaign in Campaign.query.all()]
+    forms['addTest'].campaign.choices        = campaigns
+    devices                                  = [(device.id, device.name) for device in Device.query.all()]
+
+    forms['selectDevice'].device.choices     = devices
+    channels                                 = [(channel.id, channel.chan_number) for channel in Channel.query.filter_by(device_id=Device.query.first().id).all()]
+    forms['selectDevice'].channel.choices     = channels
+
+    # if forms['addCampaign'].validate():
+    #     flash("campaign validated")
+    # if forms['addProject'].validate():
+    #     flash("project validated")
+    if forms['selectDevice'].validate():
+        flash("device validated")
+    if forms['addTest'].validate():
+        flash("test validated")
+    
+
+
+    return render_template('test.html', forms=forms)

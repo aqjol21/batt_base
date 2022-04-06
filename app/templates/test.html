@@ -8,19 +8,11 @@
     <div class="col-1"></div>
     <div class="col-10">
         <h1>Test</h1>
-
-        <h2>Variables</h2>
-        {% if variables != None %}
-        {{ variables }}
-
-        {% else %}
-        Empty data
-        {% endif %}
-        <h2>dictionary</h2>
-        {{ dic }}
-        <h2>Send data</h2> 
-        <a href="{{ url_for('test', data = urlencode(dic)) }}">Test send</a>
-        
+        <h2>test</h2>
+        {{ wtf.quick_form(forms['addTest'] , form_type="vertical") }}
+        <h2>dev</h2>
+        {{ wtf.quick_form(forms['selectDevice'] , form_type="vertical") }}
+ 
     </div>
     <div class="col-1"></div>
 </div>
