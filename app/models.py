@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 #import logging as lg
-from app import app,  db#,login
+from app import app,  db,login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 
@@ -21,7 +21,7 @@ device_enaged_identifier=db.Table('association2', db.Model.metadata,
 )
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     """Defintion of the users' table in the database
     Attributes
     ----------
@@ -56,10 +56,10 @@ class User(db.Model):
     #     self.username        = username
     #     self.password_hash   = password_hash    
 
-    def set_passwd(self,password):
+    def set_password(self,password):
         self.password_hash=generate_password_hash(password)
     
-    def check_passwd(self, password):
+    def check_password(self, password):
         return(check_password_hash(self.password_hash,password))
 
 
@@ -253,3 +253,8 @@ class Location(db.Model):
         return '{}'.format(self.name) 
 
 db.create_all()
+
+
+@login.user_loader
+def load_user(id):
+    return(User.query.get(int(id)))

@@ -16,8 +16,9 @@ app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = False
 sess.init_app(app)
 
-# login = LoginManager(app)
-# login.login_view = 'login'
+login = LoginManager(app)
+login.init_app(app)
+login.login_view = 'login'
 
 bootstrap = Bootstrap(app)
 from app import routes, models

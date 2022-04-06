@@ -20,7 +20,7 @@ from math import floor
 from flask import render_template,url_for, redirect,  send_file, flash, jsonify
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
-# from flask_login import current_user, login_user, logout_user, login_required
+from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy import inspect
 from app import app, db, session
 # Home-baked modules_________________________________________________________________
@@ -107,6 +107,7 @@ def index():
 
 #============TEST===============================================
 @app.route('/tests_list', methods=['GET'])
+@login_required
 def tests_list_get():
     campaings = []
     for campaign in Campaign.query.all():
@@ -149,6 +150,7 @@ def tests_list_get():
 
 #============CELLS===============================================
 @app.route('/cells', methods=['GET'])
+@login_required
 def cells_get():
     cellTypes = [(type_.id, type_.maker+" "+type_.model) for type_ in Cell_type.query.all() ]
     forms = {'type':CellTypeForm(), 'unit':CellForm()}
@@ -178,6 +180,7 @@ def cells_get():
     return render_template('cells_management.html',forms=forms, cells=cells)
 
 @app.route('/cell_details<id>', methods=['GET'])
+@login_required
 def cell_details_get(id):
     cell = Cell.query.filter_by(id=id).first()
     model = Cell_type.query.filter_by(id=cell.model_id).first()
@@ -202,6 +205,7 @@ def cell_details_get(id):
 
 #============SCHEDULE & EQUIPMENT=====================================
 @app.route('/schedule', methods=['GET'])
+@login_required
 def bookig_get():
     current_year, current_week = datetime.datetime.today().isocalendar()[:2]
     length =10
@@ -272,6 +276,7 @@ def bookig_get():
 #==========SCHEDULE NEW TEST==========================================
 @app.route('/booking', methods=['GET'])
 @app.route('/booking/<data>', methods=['GET'])
+@login_required
 def book_device(data=None):
     forms = {   'addCampaign'  : addCampaignForm(),
                 'addProject'   : addProjectForm(),
@@ -308,6 +313,7 @@ def book_device(data=None):
     return render_template('book_channel.html', data = data, forms = forms, channelList=channelList)
 
 @app.route('/booking/channel/<device>')
+@login_required
 def channels(device):
     channels =[ {'id':channel.id, 'name':channel.chan_number} for channel in Channel.query.filter_by(device_id=int(device)).all() ]
     return jsonify({'channels':channels})
@@ -331,12 +337,14 @@ def channels(device):
 ___________________________________________________________________________________________________________________________________'''
 #============TEST===============================================
 @app.route('/tests_list', methods=['POST'])
+@login_required
 def tests_list_post():
     return redirect(url_for('tests_list_get'))
 
 #============CELLS===============================================
 
 @app.route('/cells', methods=['POST'])
+@login_required
 def cells_post():
     forms = {'type':CellTypeForm(), 'unit':CellForm()}
     cellTypes = [(type_.id, type_.maker+" "+type_.model) for type_ in Cell_type.query.all() ]
@@ -395,12 +403,14 @@ def cells_post():
 
 #============Equipement===============================================
 @app.route('/schedule', methods=['POST'])
+@login_required
 def bookig_post():
     return redirect(url_for('bookig_get'))
 
 
 #============ Download files ==================================
 @app.route('/download/<id>')
+@login_required
 def download_datafile(id):
     path_  = path.join("files", id)
     return send_file(path_, as_attachment=True)
@@ -408,6 +418,7 @@ def download_datafile(id):
 
 #=============End measure =============================================
 @app.route('/schedule/end/<data>', methods=['GET'])
+@login_required
 def endMesure_get(data):
     data = parse_qs(data)
     endMeasure = EndMeasureForm()
@@ -417,6 +428,7 @@ def endMesure_get(data):
 #============Bookings=================================================
 
 @app.route('/booking', methods=['POST'])
+@login_required
 def book_device_post():
     forms = {   'addCampaign'  : addCampaignForm(),
                 'addProject'   : addProjectForm(),
@@ -516,6 +528,30 @@ def book_device_post():
 #         form = CellForm()
 #         return render_template('add_cell.html', title="Register cell", form = form)
 
+
+
+
+#============Login user========================================
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid username or password')
+            return redirect(url_for('login'))
+        login_user(user,remember=form.remember_me.data)
+        return redirect(url_for('index'))
+    return render_template('login.html', title='Sign In', form=form)
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    session.clear()
+    return redirect(url_for('index'))
 #============Admin==============================================
 
 

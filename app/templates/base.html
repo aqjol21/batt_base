@@ -4,6 +4,11 @@
     {% if title %}{{ title }} - Batt base{% else %}Welcome to Batt_base{% endif %}
 {% endblock %}
 
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='styles/Batt_base.css') }}">
+{% endblock %}
+
 {% block navbar %}
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -28,6 +33,15 @@
       <li class="nav-item">
         <a class="nav-link" href="/booking" >Booking</a>
       </li>
+      {% if current_user.is_anonymous %}
+      <li class="nav-item">
+        <a class="nav-link" href="/login" >Login</a>
+      </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="/logout" >Logout</a>
+        </li>
+      {% endif %}
     </ul>
   </div>
 </nav>
