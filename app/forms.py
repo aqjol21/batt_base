@@ -1,6 +1,6 @@
 from curses import flash
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, DateField, TextAreaField, IntegerField, DecimalField,FloatField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, DateField, TextAreaField, IntegerField, DecimalField,RadioField
 from wtforms.validators import DataRequired
 from wtforms.fields import FormField, DateField
 from wtforms.widgets import TextArea
@@ -8,6 +8,8 @@ from wtforms.validators import DataRequired, Email, ValidationError, EqualTo
 from wtforms import validators
 from flask import url_for
 # from wtforms.fields.html5 import DateField
+from app import db
+# from app.models import Device, Device_type
 
 
 class LoginForm(FlaskForm):
@@ -59,15 +61,17 @@ class addProjectForm(FlaskForm):
     submit      = SubmitField('Add project')
 
 class addTestForm(FlaskForm):
-    name        = StringField('Name', validators=[DataRequired()])
-    description = TextAreaField('Comments')
-    start       = DateField("Start date",validators=[DataRequired()])
-    end         = DateField("Projected end date",validators=[DataRequired()])
-    # temperature = DecimalField('Temperature (leave empty if ambiant)')
-    campaign    = SelectField("Select campaign", coerce=int, validators=[DataRequired()])
-    type_1      = SelectField("Select type", coerce=int, validators=[DataRequired()])
-    type_2      = SelectField("Select additional type (optional)", coerce=int)
-    submit      = SubmitField('Schedule test')
+    name                = StringField('Name', validators=[DataRequired()])
+    description         = TextAreaField('Comments')
+    start               = DateField("Start date",validators=[DataRequired()])
+    end                 = DateField("Projected end date",validators=[DataRequired()])
+    temperature         = DecimalField('Temperature (only account for if chamber selected)', validators=[DataRequired()])
+    campaign            = SelectField("Select campaign", coerce=int, validators=[DataRequired()])
+    type_1              = SelectField("Select type", coerce=int, validators=[DataRequired()])
+    type_2              = SelectField("Select additional type (optional)", coerce=int)
+    chambers            = RadioField("Select chamber (optional)", coerce=int) 
+    eis                 = RadioField("Select additional eis (optional)", coerce=int)
+    submit              = SubmitField('Schedule test')
 
 class selectDeviceForm(FlaskForm):
     device      = SelectField("Select device", coerce=int, validators=[DataRequired()])
@@ -76,12 +80,16 @@ class selectDeviceForm(FlaskForm):
     submit      = SubmitField('Add channel')
 
 class testTestForm(FlaskForm):
-    name        = StringField('Name', validators=[DataRequired()])
-    description = TextAreaField('Comments')
-    start       = DateField("Start date",validators=[DataRequired()])
-    end         = DateField("Projected end date",validators=[DataRequired()])
-    # temperature = DecimalField('Temperature (leave empty if ambiant)')
-    campaign    = SelectField("Select campaign", coerce=int, validators=[DataRequired()])
-    type_1      = SelectField("Select type", coerce=int, validators=[DataRequired()])
-    type_2      = SelectField("Select additional type (optional)", coerce=int)
-    submit      = SubmitField('Schedule test')
+    name                = StringField('Name', validators=[DataRequired()])
+    description         = TextAreaField('Comments')
+    start               = DateField("Start date",validators=[DataRequired()])
+    end                 = DateField("Projected end date",validators=[DataRequired()])
+    # temperature         = DecimalField('Temperature (leave empty if ambiant)')
+    campaign            = SelectField("Select campaign", coerce=int, validators=[DataRequired()])
+    type_1              = SelectField("Select type", coerce=int, validators=[DataRequired()])
+    type_2              = SelectField("Select additional type (optional)", coerce=int)
+    chambers            = RadioField("Select chamber (optional)", coerce=int, validators=[DataRequired()]) 
+    eis                 = RadioField("Select additional eis (optional)", coerce=int, validators=[DataRequired()])
+    # book_chamber        = SelectField("Select temperature chamber (optional)", coerce=int)
+    # book_additional_eis = SelectField("Select additional EIS (optional)", coerce=int)
+    submit              = SubmitField('Schedule test')

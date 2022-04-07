@@ -13,8 +13,8 @@ __status__ = "Development"
 # general libraries imports_________________________________________________________
 from os import getcwd, path
 from urllib.parse import urlencode, parse_qs
-import datetime
-from datetime import date, datetime
+# import datetime
+from datetime import datetime, timedelta
 from math import floor
 # Flask-specific libraries + setups_________________________________________________
 from flask import render_template,url_for, redirect,  send_file, flash, jsonify
@@ -52,7 +52,7 @@ def gap_filling(A):
             if (A[_+1]['start']-A[_]['end']).days <= 1: #continuous
                 pass
             else:
-                sched={'state': True, 'start':A[_]['end']+datetime.timedelta(days=1), 'end': A[_+1]['start']-datetime.timedelta(days=1)}
+                sched={'state': True, 'start':A[_]['end']+timedelta(days=1), 'end': A[_+1]['start']-timedelta(days=1)}
                 A.insert(_+1, sched)
                 gap_filling(A)
 
@@ -102,7 +102,7 @@ def index():
         device_['channels']=channels_
         device_['utilization']= sum(1 for d in device_['channels'] if d.get('status') == True)/len(device_['channels'])*100
         devices_.append(device_)
-
+    
     return render_template('index.html', title='Home', devices = devices_)
 
 #============TEST===============================================
@@ -137,7 +137,7 @@ def tests_list_get():
                 test_[ 'channel'] = channel
                 test_[ 'device']  = Device.query.filter_by(id=channel.device_id).first().name
                 test_[ 'cell' ]   = Cell.query.filter_by(id=single.cell_id).first().name
-                if test.end < datetime.datetime.today():
+                if test.end < datetime.today():
                     test_[ 'cycler']  = single.cycler_file
                     test_[ 'cms']     = single.prototype_file
                 else:
@@ -207,7 +207,7 @@ def cell_details_get(id):
 @app.route('/schedule', methods=['GET'])
 @login_required
 def bookig_get():
-    current_year, current_week = datetime.datetime.today().isocalendar()[:2]
+    current_year, current_week = datetime.today().isocalendar()[:2]
     length =10
     max_week     = current_week + length
     # Init the table
@@ -221,14 +221,14 @@ def bookig_get():
     # print(schedules[0])
 
     # modify the content based on tests
-    today = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+    today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
     tests = Test.query.filter(Test.end >= today).all()
     for test in tests:
         user  = User.query.filter_by(id=test.user_id).first().username
         type1 = Test_type.query.filter_by(id=test.type_1).first()
         type2 = Test_type.query.filter_by(id=test.type_2).first()
         start = test.start if test.start > today else today
-        end = test.end if test.end <today+datetime.timedelta(weeks=length) else today+datetime.timedelta(weeks=length)
+        end = test.end if test.end <today+timedelta(weeks=length) else today+timedelta(weeks=length)
         # print(start, end)
         xstart = (start-today).days
         xend   = (end-today).days
@@ -280,25 +280,34 @@ def bookig_get():
 def book_device(data=None):
     forms = {   'addCampaign'  : addCampaignForm(),
                 'addProject'   : addProjectForm(),
-                'addTest'      : addTestForm(),
+                'addTest'      : addTestForm(temperature=25),
                 'selectDevice' : selectDeviceForm()
             }
-
+# filling forms multiple choices options ______________________
+    ## case 1 new Test form _______________________________________
     test_types                               = [(type.id, type.name) for type in Test_type.query.all()]
     forms['addTest'].type_1.choices          = test_types
-    test_types2                              = test_types.copy()
-    test_types2[0]                           = (0, "")
-    forms['addTest'].type_2.choices          = test_types2
-    projects                                 = [(project.id, project.name) for project in Project.query.all()]
-    forms['addCampaign'].project.choices     = projects
+    test_types2 = test_types.copy()
+    # test_types2[0] = (0, "")
+    forms['addTest'].type_2.choices          = [(0, "")]+test_types2
     campaigns                                = [(campaign.id, campaign.name) for campaign in Campaign.query.all()]
     forms['addTest'].campaign.choices        = campaigns
-    devices                                  = [(device.id, device.name) for device in Device.query.all()]
-    forms['selectDevice'].device.choices     = devices
+    chambers                                 = [("0","None")]+[ (device.id, device.name) for device in [ device for device in Device.query.all() if Device_type.query.filter_by(name = "temperature chamber").first() in device.type]]
+    forms['addTest'].chambers.choices        = chambers
+    eis                                      = [("0","None")]+[ (device.id, device.name) for device in [ device for device in Device.query.all() if Device_type.query.filter_by(name = "EIS").first() in device.type and len(device.type)==1]]
+    forms['addTest'].eis.choices             = eis
+    forms['addTest'].chambers.default        = 0
+    ## case 2 new Campaign form _______________________________________
+    projects                                 = [(project.id, project.name) for project in Project.query.all()]
+    forms['addCampaign'].project.choices     = projects
+    ## case 3 add channel/device/cell form _______________________________________
+    cyclers                                  = [(device.id, device.name) for device in [device for listDev in [ [dev for dev in Device.query.all() if cycler_type in dev.type] for cycler_type in [ typ for typ in Device_type.query.all() if "cycler" in typ.name]] for device in listDev] ]
+    forms['selectDevice'].device.choices     = cyclers
     channels                                 = [(channel.id, channel.chan_number) for channel in Channel.query.filter_by(device_id=Device.query.first().id).all()]
-    forms['selectDevice'].channel.choices     = channels
+    forms['selectDevice'].channel.choices    = channels
     cells                                    = [(cell.id, cell.name) for cell in Cell.query.all()]
     forms['selectDevice'].cell.choices       = cells
+
 
     if 'channel_list' in session:
         channelList = session['channel_list']
@@ -318,6 +327,16 @@ def channels(device):
     channels =[ {'id':channel.id, 'name':channel.chan_number} for channel in Channel.query.filter_by(device_id=int(device)).all() ]
     return jsonify({'channels':channels})
 
+@app.route('/booking/channel/cancel/<line>')
+@login_required
+def remove_channel(line):
+    if 'channel_list' in session:
+        channelList = session['channel_list']
+        del channelList[int(line)]
+        session['channel_list'] = channelList
+        session.modified = True
+
+    return redirect(url_for('book_device'))
 # @app.route('/booking/type/<test_type>')
 # def types(test_type):
 #     type_1 = Device.query.filter_by(id=int(test_type)).first()
@@ -397,16 +416,11 @@ def cells_post():
         
     return redirect(url_for('cells_get'))
 
-
-
-
-
 #============Equipement===============================================
 @app.route('/schedule', methods=['POST'])
 @login_required
 def bookig_post():
     return redirect(url_for('bookig_get'))
-
 
 #============ Download files ==================================
 @app.route('/download/<id>')
@@ -414,7 +428,6 @@ def bookig_post():
 def download_datafile(id):
     path_  = path.join("files", id)
     return send_file(path_, as_attachment=True)
-
 
 #=============End measure =============================================
 @app.route('/schedule/end/<data>', methods=['GET'])
@@ -428,25 +441,39 @@ def endMesure_get(data):
 #============Bookings=================================================
 
 @app.route('/booking', methods=['POST'])
+@app.route('/booking/<data>', methods=['POST'])
 @login_required
-def book_device_post():
+def book_device_post(data=None):
     forms = {   'addCampaign'  : addCampaignForm(),
                 'addProject'   : addProjectForm(),
-                'addTest'      : addTestForm(),
+                
                 'selectDevice' : selectDeviceForm()
             }
-
+    # filling forms multiple choices options ______________________
+    ## case 1 new Test form _______________________________________
     test_types                               = [(type.id, type.name) for type in Test_type.query.all()]
+    campaigns                                = [(campaign.id, campaign.name) for campaign in Campaign.query.all()]
+    chambers                                 = [("0","None")]+[ (device.id, device.name) for device in [ device for device in Device.query.all() 
+                                                if Device_type.query.filter_by(name = "temperature chamber").first() in device.type]]
+    eis                                      = [("0","None")]+[ (device.id, device.name) for device in [ device for device in Device.query.all() 
+                                                if Device_type.query.filter_by(name = "EIS").first() in device.type and len(device.type)==1]]
+    forms['addTest'] = addTestForm(temperature=25,
+    )
+    forms['addTest'].eis.choices             = eis
     forms['addTest'].type_1.choices          = test_types
-    test_types2 = test_types.copy()
-    test_types2[0] = (0, "")
-    forms['addTest'].type_2.choices          = test_types2
+    forms['addTest'].type_2.choices          = [(0, "")]+test_types
+    forms['addTest'].campaign.choices        = campaigns
+    forms['addTest'].chambers.choices        = chambers
+
+
+    
+    # forms['addTest'].temperature.data     = 25
+    ## case 2 new Campaign form _______________________________________
     projects                                 = [(project.id, project.name) for project in Project.query.all()]
     forms['addCampaign'].project.choices     = projects
-    campaigns                                = [(campaign.id, campaign.name) for campaign in Campaign.query.all()]
-    forms['addTest'].campaign.choices        = campaigns
-    devices                                  = [(device.id, device.name) for device in Device.query.all()]
-    forms['selectDevice'].device.choices     = devices
+    ## case 3 add channel/device/cell form _______________________________________
+    cyclers                                  = [(device.id, device.name) for device in [device for listDev in [ [dev for dev in Device.query.all() if cycler_type in dev.type] for cycler_type in [ typ for typ in Device_type.query.all() if "cycler" in typ.name]] for device in listDev] ]
+    forms['selectDevice'].device.choices     = cyclers
     channels                                 = [(channel.id, channel.chan_number) for channel in Channel.query.filter_by(device_id=Device.query.first().id).all()]
     forms['selectDevice'].channel.choices    = channels
     cells                                    = [(cell.id, cell.name) for cell in Cell.query.all()]
@@ -473,19 +500,64 @@ def book_device_post():
                 else:
                     channelList.append({'device':device.name,
                                         'channel':channel.chan_number,
-                                        'cell':cell.name})
+                                        'cell':cell.name,
+                                        'channel_id':channel.id,
+                                        'cell_id':cell.id})
         else:
             channelList.append({'device':device.name,
                                         'channel':channel.chan_number,
-                                        'cell':cell.name})
-        session.modified = True
+                                        'cell':cell.name,
+                                        'channel_id':channel.id,
+                                        'cell_id':cell.id})
+        print(channelList)
         session['channel_list'] = channelList
+        session.modified = True
     
-    if forms['addTest'].validate():
+    if forms['addTest'].validate_on_submit():
         # flash("test validated")
         if len(channelList)<1:
-            flash("empty list, select channel first")
-    
+            print("channel list empty")
+        else:
+            print("started test registration")
+            test = Test(
+                name        = forms['addTest'].name.data,
+                description = forms['addTest'].description.data if forms['addTest'].description.data else None,
+                start       = forms['addTest'].start.data,
+                end         = forms['addTest'].end.data,
+                active      = True if forms['addTest'].start.data == datetime.today() else False,
+                type_1      = forms['addTest'].type_1.data,
+                type_2      = forms['addTest'].type_2.data 
+                if (forms['addTest'].type_2.data!="" 
+                and forms['addTest'].type_2.data!=forms['addTest'].type_1.data) else None,
+                campaign_id = forms['addTest'].campaign.data,
+                user_id     = current_user.id,
+            )
+            
+
+            if forms['addTest'].eis.data:
+                eis_device = Device.query.filter_by(id=forms['addTest'].eis.data).first()
+                test.devices.append(eis_device)
+                print("we added an eis")
+
+            if forms['addTest'].chambers.data:
+                chamber_device = Device.query.filter_by(id=forms['addTest'].chambers.data).first()
+                test.devices.append(chamber_device)
+                print("we added a temp chamber")
+                test.temp = forms['addTest'].temperature.data
+            
+            db.session.add(test)
+            db.session.commit()
+            
+            for channel in channelList:
+                single_test = SingleTest(
+                    channel_id=channel['channel_id'],
+                    cell_id=channel['cell_id'],
+                    test_id = test.id
+                )
+                # ADD check of devices and cell availability
+                db.session.add(single_test)
+            db.session.commit()
+    #ADD cleaning session after submit
     if forms['addCampaign'].validate():
         # flash ("campaign added")
         campaign_names = [campaign.name for campaign in Campaign.query.all()]
@@ -498,8 +570,7 @@ def book_device_post():
             db.session.add(campaign)
             db.session.commit()
             print("campaign added")
-
-
+            # flash("sucess", "sucess")
 
     if forms['addProject'].validate():
         # flash ("project added")
@@ -513,8 +584,6 @@ def book_device_post():
             db.session.add(project)
             db.session.commit()
             print("project added")
-
-
 
     return redirect(url_for('book_device'))
 # ==========================================================> function for QR code
@@ -574,32 +643,42 @@ admin.add_view(ModelView(Campaign, db.session))
 @app.route("/test", methods=['POST', 'GET'])
 def test():
     
-    forms = { 
+    # form     =  testTestForm()
+    forms = {   'addCampaign'  : addCampaignForm(),
+                'addProject'   : addProjectForm(),
                 'addTest'      : testTestForm(),
                 'selectDevice' : selectDeviceForm()
             }
+    # filling forms multiple choices options ______________________
+    ## case 1 new Test form _______________________________________
     test_types                               = [(type.id, type.name) for type in Test_type.query.all()]
     forms['addTest'].type_1.choices          = test_types
-    forms['addTest'].type_2.choices          = test_types
-    # projects                                 = [(project.id, project.name) for project in Project.query.all()]
-    # forms['addCampaign'].project.choices     = projects
+    test_types2 = test_types.copy()
+    # test_types2[0] = (0, "")
+    forms['addTest'].type_2.choices          = test_types2
     campaigns                                = [(campaign.id, campaign.name) for campaign in Campaign.query.all()]
     forms['addTest'].campaign.choices        = campaigns
-    devices                                  = [(device.id, device.name) for device in Device.query.all()]
+    chambers                                 = [("0","None")]+[ (device.id, device.name) for device in [ device for device in Device.query.all() if Device_type.query.filter_by(name = "temperature chamber").first() in device.type]]
+    forms['addTest'].chambers.choices        = chambers
+    eis                                      = [("0","None")]+[ (device.id, device.name) for device in [ device for device in Device.query.all() if Device_type.query.filter_by(name = "EIS").first() in device.type and len(device.type)==1]]
+    forms['addTest'].eis.choices             = eis
 
-    forms['selectDevice'].device.choices     = devices
+
+
+    # ## case 2 new Campaign form _______________________________________
+    projects                                 = [(project.id, project.name) for project in Project.query.all()]
+    forms['addCampaign'].project.choices     = projects
+    # ## case 3 add channel/device/cell form _______________________________________
+    cyclers                                  = [(device.id, device.name) for device in [device for listDev in [ [dev for dev in Device.query.all() if cycler_type in dev.type] for cycler_type in [ typ for typ in Device_type.query.all() if "cycler" in typ.name]] for device in listDev] ]
+    forms['selectDevice'].device.choices     = cyclers
     channels                                 = [(channel.id, channel.chan_number) for channel in Channel.query.filter_by(device_id=Device.query.first().id).all()]
-    forms['selectDevice'].channel.choices     = channels
+    forms['selectDevice'].channel.choices    = channels
+    cells                                    = [(cell.id, cell.name) for cell in Cell.query.all()]
+    forms['selectDevice'].cell.choices       = cells
 
-    # if forms['addCampaign'].validate():
-    #     flash("campaign validated")
-    # if forms['addProject'].validate():
-    #     flash("project validated")
-    if forms['selectDevice'].validate():
-        flash("device validated")
-    if forms['addTest'].validate():
-        flash("test validated")
-    
+    for key in forms.keys():
+        if forms[key].validate():
+            print(key, "  validated")
 
 
     return render_template('test.html', forms=forms)

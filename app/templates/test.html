@@ -8,10 +8,9 @@
     <div class="col-1"></div>
     <div class="col-10">
         <h1>Test</h1>
-        <h2>test</h2>
-        {{ wtf.quick_form(forms['addTest'] , form_type="vertical") }}
-        <h2>dev</h2>
-        {{ wtf.quick_form(forms['selectDevice'] , form_type="vertical") }}
+        {% for key in forms.keys() %}
+        {{ wtf.quick_form(forms[key]) }}
+        {% endfor %}
  
     </div>
     <div class="col-1"></div>
