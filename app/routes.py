@@ -72,7 +72,7 @@ def gap_filling(A):
         parameters
         ==========
         id : int, id of the cell of which the details must be displayed
-    bookig_get()
+    booking_get()
 ___________________________________________________________________________________________________________________________________'''
 
 
@@ -207,7 +207,7 @@ def cell_details_get(id):
 #============SCHEDULE & EQUIPMENT=====================================
 @app.route('/schedule', methods=['GET'])
 @login_required
-def bookig_get():
+def booking_get():
     current_year, current_week = datetime.today().isocalendar()[:2]
     length =10
     max_week     = current_week + length
@@ -425,7 +425,7 @@ def cells_post():
 @app.route('/schedule', methods=['POST'])
 @login_required
 def bookig_post():
-    return redirect(url_for('bookig_get'))
+    return redirect(url_for('booking_get'))
 
 #============ Download files ==================================
 @app.route('/download/<id>')
@@ -488,7 +488,7 @@ def cancel(data=None):
         SingleTest.query.filter_by(test_id=test.id).delete()
         Test.query.filter_by(id=int(data['test'][0])).delete()
         db.session.commit()
-        return redirect(url_for('bookig_get'))
+        return redirect(url_for('booking_get'))
         # filename = secure_filename(EndMeasureForm.file.data)
         # print(filename)
     return render_template("cancel.html", test=test,elements=elements, form = form)
@@ -499,6 +499,11 @@ def cancel(data=None):
 @app.route('/booking/<data>', methods=['POST'])
 @login_required
 def book_device_post(data=None):
+    if data is not None:
+        data = parse_qs(data)
+    else:
+        data = None
+
     forms = {   'addCampaign'  : addCampaignForm(),
                 'addProject'   : addProjectForm(partners="No one"),
                 
@@ -541,23 +546,17 @@ def book_device_post(data=None):
 
     if forms['selectDevice'].validate():
         # flash("device validated")
-        device = Device.query.filter_by(id = forms['selectDevice'].device.data).first()
+        device  = Device.query.filter_by(id = forms['selectDevice'].device.data).first()
         channel = Channel.query.filter_by(id =forms['selectDevice'].channel.data ).first()
         cell    = Cell.query.filter_by(id = forms['selectDevice'].cell.data).first()
         if len(channelList)> 0:
             for chan in channelList:
                 if chan['device'] == device.name and chan['channel']==channel.chan_number :
                     print("device channel already in the list")
-                    break
+                    return redirect(url_for('book_device'))
                 elif chan['cell']== cell.name:
                     print("cell already in the list")
-                    break
-                else:
-                    channelList.append({'device':device.name,
-                                        'channel':channel.chan_number,
-                                        'cell':cell.name,
-                                        'channel_id':channel.id,
-                                        'cell_id':cell.id})
+                    return redirect(url_for('book_device'))
         else:
             channelList.append({'device':device.name,
                                         'channel':channel.chan_number,
@@ -600,8 +599,10 @@ def book_device_post(data=None):
                 print("we added a temp chamber")
                 test.temp = forms['addTest'].temperature.data
             
-            db.session.add(test)
-            db.session.commit()
+            
+
+
+            
             
             for channel in channelList:
                 single_test = SingleTest(
@@ -611,6 +612,7 @@ def book_device_post(data=None):
                 )
                 # ADD check of devices and cell availability
                 db.session.add(single_test)
+            db.session.add(test)
             db.session.commit()
     #ADD cleaning session after submit
     if forms['addCampaign'].validate():
