@@ -266,9 +266,13 @@ def bookig_get():
                     planning[i-1]['len']+= planning[i]['len']
                     del planning[i]
                 elif planning[i]['booked']==True:
-                    if planning[i]['test']==planning[i-1]['test']:
-                        planning[i-1]['len']+= planning[i]['len']
-                        del planning[i]
+                    try:
+                        if planning[i]['test']==planning[i-1]['test']:
+                            planning[i-1]['len']+= planning[i]['len']
+                            del planning[i]
+                    except Exception as e:
+                        print(e)
+                        
 
     
     return render_template('devices_management.html', data = schedules,current_week=current_week, max_week=max_week,current_year=current_year)
