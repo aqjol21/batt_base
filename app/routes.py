@@ -279,7 +279,7 @@ def bookig_get():
 @login_required
 def book_device(data=None):
     forms = {   'addCampaign'  : addCampaignForm(),
-                'addProject'   : addProjectForm(),
+                'addProject'   : addProjectForm(partners="No one"),
                 'addTest'      : addTestForm(temperature=25),
                 'selectDevice' : selectDeviceForm()
             }
@@ -434,6 +434,7 @@ def download_datafile(id):
 @login_required
 def endMesure_get(data):
     data = parse_qs(data)
+    print(data)
     endMeasure = EndMeasureForm()
     return render_template('end_measure.html', data=data,endMeasure=endMeasure)
 
@@ -445,7 +446,7 @@ def endMesure_get(data):
 @login_required
 def book_device_post(data=None):
     forms = {   'addCampaign'  : addCampaignForm(),
-                'addProject'   : addProjectForm(),
+                'addProject'   : addProjectForm(partners="No one"),
                 
                 'selectDevice' : selectDeviceForm()
             }
