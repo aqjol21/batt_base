@@ -1,5 +1,6 @@
 from curses import flash
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, DateField, TextAreaField, IntegerField, DecimalField,RadioField
 from wtforms.validators import DataRequired
 from wtforms.fields import FormField, DateField
@@ -45,7 +46,11 @@ class CellForm(FlaskForm):
 
 
 class EndMeasureForm(FlaskForm):
-    submit        = SubmitField('start cell')
+    file          = FileField('File')
+    submit        = SubmitField('upload')
+
+class SimpleValidateForm(FlaskForm):
+    submit = SubmitField("Are you sure?")
 
 
 class addCampaignForm(FlaskForm):
@@ -78,6 +83,10 @@ class selectDeviceForm(FlaskForm):
     channel     = SelectField("Select channel", coerce=int, validators=[DataRequired()])
     cell        = SelectField("Select cell", coerce=int, validators=[DataRequired()])
     submit      = SubmitField('Add channel')
+
+
+
+
 
 class testTestForm(FlaskForm):
     name                = StringField('Name', validators=[DataRequired()])

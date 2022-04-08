@@ -17,12 +17,13 @@ from urllib.parse import urlencode, parse_qs
 from datetime import datetime, timedelta
 from math import floor
 # Flask-specific libraries + setups_________________________________________________
-from flask import render_template,url_for, redirect,  send_file, flash, jsonify
+from flask import render_template,url_for, redirect,  send_file, flash, jsonify, request,abort
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy import inspect
 from app import app, db, session
+from werkzeug.utils import secure_filename
 # Home-baked modules_________________________________________________________________
 from app.models import *  # database models
 from app.forms import *   # webforms
@@ -429,15 +430,64 @@ def download_datafile(id):
     path_  = path.join("files", id)
     return send_file(path_, as_attachment=True)
 
+#============ Upload files ==================================
+@app.route('/upload/<id>', methods=['GET', 'POST'])
+# @login_required
+def upload_datafile(id):
+    uploaded_file = request.files['file']
+    filename = secure_filename(uploaded_file.filename)
+    if filename != '':
+        file_ext = path.splitext(filename)[1]
+        if file_ext not in app.config['UPLOAD_EXTENSIONS'] :
+            abort(400)
+        uploaded_file.save(path.join(app.config['UPLOAD_PATH'], filename))
+    return redirect(url_for('index'))
+
 #=============End measure =============================================
 @app.route('/schedule/end/<data>', methods=['GET'])
 @login_required
 def endMesure_get(data):
     data = parse_qs(data)
     print(data)
+    print(data['test'])
     endMeasure = EndMeasureForm()
     return render_template('end_measure.html', data=data,endMeasure=endMeasure)
 
+@app.route('/schedule/end/<data>', methods=['POST'])
+@login_required
+def endMesure_post(data=None):
+    if data is not None:
+        data = parse_qs(data)
+        print(data)
+    endMeasure = EndMeasureForm()
+    if endMeasure.validate():
+        print(EndMeasureForm.file)
+        # filename = secure_filename(EndMeasureForm.file.data)
+        # print(filename)
+    return redirect(url_for('index'))
+
+@app.route('/schedule/cancel/<data>', methods=['GET', 'POST'])
+@login_required
+def cancel(data=None):
+    if data is not None:
+        data = parse_qs(data)
+    print(data)
+    test = Test.query.filter_by(id=int(data['test'][0])).first()
+    singles = SingleTest.query.filter_by(test_id=test.id).all()
+    channels = [Channel.query.filter_by(id=single.channel_id).first() for single in singles]
+    devices  = [Device.query.filter_by(id=channel.device_id).first() for channel in channels]
+    cells    = [Cell.query.filter_by(id=single.cell_id).first() for single in singles]
+    elements = [{'device':devices[_].name, 'channel':channels[_].chan_number,'cell':cells[_].name} for _ in range(len(singles))]
+    form = SimpleValidateForm()
+    if form.validate():
+        print("delete test; ", test)
+        SingleTest.query.filter_by(test_id=test.id).delete()
+        Test.query.filter_by(id=int(data['test'][0])).delete()
+        db.session.commit()
+        return redirect(url_for('bookig_get'))
+        # filename = secure_filename(EndMeasureForm.file.data)
+        # print(filename)
+    return render_template("cancel.html", test=test,elements=elements, form = form)
 
 #============Bookings=================================================
 

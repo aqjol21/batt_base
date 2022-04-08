@@ -20,5 +20,12 @@ login = LoginManager(app)
 login.init_app(app)
 login.login_view = 'login'
 
+
+app.config['UPLOAD_PATH'] = 'uploads'
+
+# UPLOAD_FOLDER = '/files'
+# # ALLOWED_EXTENSIONS = {'txt', 'csv'}
+# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 bootstrap = Bootstrap(app)
 from app import routes, models

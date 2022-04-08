@@ -45,16 +45,17 @@
                     On-going test:  {{ schedule['name'] }}</br>
                     Type of test : {{ schedule['type'] }}</br>
                     Started by : {{ schedule['user'] }}</br>
-                    <a class="btn btn-secondary" href="{{ url_for( 'endMesure_get' ,data = urlencode({ 'device':device['name'], 'channel':c, 'test':schedule['test_id'] }) ) }}" class="text-dark">Terminate</a>
+                    <a class="btn btn-secondary" href="{{ url_for( 'endMesure_get' ,data = urlencode({ 'device':device['name'], 'channel':c, 'test':schedule['test'] }) ) }}" class="text-dark">Terminate</a>
                   </div>
                 </td>
                 {% else %}
                 <td class="bg-warning" colspan="{{ schedule['len'] }}" data-toggle="collapse" data-target="#{{device['name']+'_'+str(c)+'_'+str(s)}}" style="cursor: pointer;"> {{ schedule['type'] }}
                   <div id="{{device['name']+'_'+str(c)+'_'+str(s)}}" class="collapse in">
-                    On-going test:  {{ schedule['name'] }}</br>
+                    Scheduled test:  {{ schedule['name'] }}
+                    {{ schedule['test'] }}</br>
                     Type of test : {{ schedule['type'] }}</br>
                     Started by : {{ schedule['user'] }}</br>
-                    <a class="btn btn-secondary" href="{{ url_for( 'endMesure_get' ,data = urlencode({ 'device':device['name'], 'channel':c, 'test':schedule['test_id'] }) ) }}" class="text-dark">Terminate</a>
+                    <a class="btn btn-secondary" href="{{ url_for( 'cancel' ,data = urlencode({ 'device':device['name'], 'channel':c, 'test':schedule['test'] }) ) }}" class="text-dark">Cancel</a>
                   </div>
                 </td>
                 {% endif %}
