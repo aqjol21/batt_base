@@ -60,7 +60,7 @@ def db_init():
     users = ['pii', 'sbh', 'cbo']
     for user in tqdm(users, desc="Filling users table"):
         us = User(username=user)
-        us.set_passwd("1111")
+        us.set_password("1111")
         db.session.add(us)
         db.session.commit()
 
