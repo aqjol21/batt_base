@@ -28,20 +28,12 @@
         <a class="nav-link" href="/schedule">Schedule</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/cells" >Cell inventory</a>
+        <a class="nav-link" href="/inventory/cells" >Inventory</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/booking" >Booking</a>
+        <a class="nav-link" href="/booking/singlecells" >Booking</a>
       </li>
-      {% if current_user.is_anonymous %}
-      <li class="nav-item">
-        <a class="nav-link" href="/login" >Login</a>
-      </li>
-        {% else %}
-        <li class="nav-item">
-          <a class="nav-link" href="/logout" >Logout</a>
-        </li>
-      {% endif %}
+
     </ul>
   </div>
 </nav>

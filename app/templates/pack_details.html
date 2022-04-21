@@ -5,26 +5,26 @@
 <div class="row container-fluid mt-3">
     <div class="col-1"></div>
     <div class="col-10">
-        <h1>Cell: {{ cell.name }} details</h1>
+        <h1>pack: {{ pack.name }} details</h1>
         <div class="row mt-3">
             <div class="col-5 me-3">
                 <h2>Unit details</h2>
-                <table id="cell_details" class="table">
+                <table id="pack_details" class="table">
                     <tbody >
                             <tr>
-                            <td>Purchase date:</td> <td>{{ cell.purchase_date }}</td>
+                            <td>Purchase/assembly date:</td> <td>{{ pack.purchase_date }}</td>
                             </tr>
                             
-                            {% if cell.under_use == False %}
+                            {% if pack.under_use == False %}
                             <tr>
-                            <td>Cell available</td>
+                            <td>pack available</td>
                             </tr>
                             <tr>
-                            <td>Location:</td> <td>{{ cell.location }}</td>
+                            <td>Location:</td> <td>{{ pack.location }}</td>
                             </tr>
                             {% else %}
                             <tr>
-                                <td>Cell under use</td>
+                                <td>pack under use</td>
                                 </tr>
                             {% endif %}
 
@@ -35,7 +35,7 @@
                 <table id="model_details" class="table">
                     <tbody >
                             <tr>
-                            <td>Cell type:</td> <td>{{ model.model }}</td>
+                            <td>Cells used type:</td> <td>{{ model.model }}</td>
                             </tr>
                             <tr>
                             <td>Manufacturer:</td> <td>{{ model.maker }}</td>
@@ -79,7 +79,6 @@
 
             </div>
             <div class="col-7 ms-4">
-                <button type="button" class="btn btn-primary">Change location</button>
                 <h2>Cycling history</h2>
 
                 {% for _, campain in enumerate(campains) %}

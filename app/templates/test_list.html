@@ -7,81 +7,77 @@
 {% block main %}
 
 <div class="row container-fluid mt-3">
-<div class="col-1"></div>
 <div class="col-10">
+  <div class="row container-fluid">
+    <div class="col-3">
+    {{wtf.quick_form(filter_form)}}
+    </div>
   
-  <h1>List of completed tests and test campains</h1>
+  <div class="col-8">
+    <h1>List of completed tests and test campains</h1>
   <div class="container-fluid mt-3" >
-    <table id="table" class="table table-hover"
-          data-toggle="table"
-          data-filter-control="true"
-          data-show-search-clear-button="true"
-          data-show-columns="true"
-          data-show-columns-toggle-all="true"
-          data-sortable="true"
-          data-pagination="true"
-           
-          >
+     
+    <table id="table" class="table table-hover" data-pagination="true">
 
         <thead class="thead-light">
           <tr>
-            <th data-field="columnA" data-filter-control="input">Campain</th>
-            <th data-field="columnB" data-filter-control="select">Name</th>
-            <th data-field="columnC" data-filter-control="select">Status</th>
-            <th data-field="columnD" data-filter-control="select">User</th>
-            <th>Test</th>
-            <th data-field="columnF" data-filter-control="input">Cell</th>
-            <th data-field="columnG" data-filter-control="select">Cell Type</th>
-            <th data-field="columnH" data-filter-control="select">Type 1</th>
-            <th data-field="columnI" data-filter-control="select">Type 2</th>
-            <th data-field="columnJ" data-filter-control="select">Device</th>
-            <th data-field="columnK" data-filter-control="input">Channel</th>
-            <th data-field="columnL" data-filter-control="select">Chamber</th>
-            <th data-field="columnM" data-filter-control="select">EIS</th>
-            <th data-field="columnN" data-filter-control="input">Temp</th>
-            <th data-field="columnO" data-filter-control="input">Start</th>
-            <th data-field="columnP" data-filter-control="input">End</th>
-            <th>Data files</th>
+            <th >Test</th>
+            <th >Campain</th>
+            <th >Status</th>
+            <th >User</th>
+            <th >Cell</th>
+            <th >Cell Type</th>
+            <th >Type 1</th>
+            <th >Type 2</th>
+            <th >Device</th>
+            <th >Channel</th>
+            <th >Chamber</th>
+            <th >EIS</th>
+            <th >Temp</th>
+            <th >Start</th>
+            <th >End</th>
+            <th >Data files</th>
           </tr>
         </thead>
+        
+        
+        
+        
+        
         <tbody>
-          {% for i, campain in enumerate(campains) %}
-            {% for j, test in enumerate(campain.tests) %}
+            {% for j, test in enumerate(tests) %}
                 <tr >
-                <td>{{ i }}</td>
-                <td>{{ campain.name }}</td>
+                <td>{{ test.name }}</td>
+                <td>{{ test.campaign }}</td>
                 <td>
-                  {% if campain.status == True %} 
+                  {% if test.status == True %} 
                   <p class="text-warning">On-going</p>
                   {% else %}
                   <p class="text-muted">Completed</p>
                   {% endif %}
                 </td>
                 <td>{{ test.user }}</td>
-                <td>{{ j }}</td>
-                <td>{{ test.cell }}</td>
-                <td> Type </td>
+                <td>{{ test.cell_name }}</td>
+                <td>{{ test.cell_type }} </td>
                 <td>{{ test.type_1 }}</td>
                 <td>{{ test.type_2 }}</td>
                 <td>{{ test.device }}</td>
                 <td>{{ test.channel }}</td>
                 <td>{{ test.chamber }}</td>
                 <td>{{ test.eis }}</td>
-                <td>{{ test.temp }}</td>
+                <td>{% if test.chamber != "" %} {{ test.temp }} {% endif %} </td>
                 <td>{{ test.start }}</td>
                 <td>{{ test.end }}</td>
                 <td> {% if test.cycler != None %}<a href="/download/{{ test.cycler  }}" class="text-primary">cycler </a> {% endif %}</br>
                      {% if test.cms    != None %}<a href="/download/{{ test.cms  }}" class="text-primary">cms </a>       {% endif %} </td>
                 </tr>
             {% endfor %}
-          {% endfor %}
         </tbody>
       </table>
     </div>
-
-      <div class="row mt-5">
-        <div class="col-3"><button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalNewType"> Start Campain</button></div>
-      </div>
+  </div>
+  </div>
+  
 
 
 </div>

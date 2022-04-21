@@ -36,7 +36,7 @@
                                         <div class="col-6 mx-auto"><span class="badge badge-pill badge-danger">Under use</span></div>
                                         <div class="col-6 mx-auto"><span class="badge badge-pill badge-info">{{ device.channels[i]["user"]}}</span></div>
                                     {% else %}
-                                    <div class="col-sm-12 align-items-center" ><span class="badge badge-pill badge-success"><a href="{{ url_for( 'book_device' ,data = urlencode({ 'device':device.name, 'channel':i }) ) }}" class="text-white">Free to use</a></span></div>
+                                    <div class="col-sm-12 align-items-center" ><span class="badge badge-pill badge-success"><a href="{{ url_for( 'book_device_cells_get' ,data = urlencode({ 'device':device.name, 'channel':i }) ) }}" class="text-white">Free to use</a></span></div>
                                     {% endif %}
                                 </div>
                             {% endfor %}
@@ -49,7 +49,7 @@
                                             <div class="col-6 ms-4"><span class="badge badge-pill badge-danger">Under use</span></div>
                                             <div class="col-6 ms-4"><span class="badge badge-pill badge-info">{{ device.channels[i]["user"]}}</span></div>
                                         {% else %}
-                                        <div class="col-sm-12 align-items-center"><span class="badge badge-pill badge-success"><a href="{{ url_for( 'book_device' ,data = urlencode({ 'device':device.name, 'channel':i }) ) }}" class="text-white">Free to use</a></span></div>
+                                        <div class="col-sm-12 align-items-center"><span class="badge badge-pill badge-success"><a href="{{ url_for( 'book_device_cells_get' ,data = urlencode({ 'device':device.name, 'channel':i }) ) }}" class="text-white">Free to use</a></span></div>
                                         {% endif %}
                                     </div>
                                 {% endfor %}
@@ -91,7 +91,7 @@
                                             <div class="col-6"><span class="badge badge-pill badge-danger">Under use</span></div>
                                             <div class="col-6"><span class="badge badge-pill badge-info">{{ channel["user"]}}</span></div>
                                         {% else %}
-                                        <div class="col-sm-12 align-items-center"><span class="badge badge-pill badge-success"><a href="{{ url_for( 'book_device' ,data = urlencode({ 'device':device.name, 'channel':c }) ) }}" class="text-white">Free to use</a></span></div>
+                                        <div class="col-sm-12 align-items-center"><span class="badge badge-pill badge-success"><a href="{{ url_for( 'book_device_cells_get' ,data = urlencode({ 'device':device.name, 'channel':c }) ) }}" class="text-white">Free to use</a></span></div>
                                         {% endif %}
                                     </div>
                                 {% endfor %}

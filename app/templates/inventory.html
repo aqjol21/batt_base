@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+
+{% block main %}
+<div class="row container-fluid mt-3">
+
+    <div class="col-1">
+        <div class=""row></div>
+    </div>
+    <div class="col-10">
+        <h1>Inventory</h1>
+
+        <div class="row container-fluid mb-3 mt-6">
+            <div class="col-4">
+                {% if type == 'cell' %}
+                <button id="device_cell" type="button" class="btn btn-secondary btn-block">Cells</button>
+                {% else %}
+                <button id="device_cell" type="button" class="btn btn-outline-secondary btn-block">Cells</button>
+                {% endif %}
+                <script type="text/javascript">
+                    document.getElementById("device_cell").onclick = function () {
+                        location.href = "{{ url_for( 'cells_get') }}";
+                    };
+                </script>
+            </div>
+            <div class="col-4">
+                {% if type == 'pack' %}
+                <button id="device_pack" type="button" class="btn btn-secondary btn-block"  >Pack</button>
+                {% else %}
+                <button id="device_pack" type="button" class="btn btn-outline-secondary btn-block"  >Pack </button>
+                {% endif %}
+                <script type="text/javascript">
+                    document.getElementById("device_pack").onclick = function () {
+                        location.href = "{{ url_for( 'packs_get') }}";
+                    };
+                </script>
+            </div>
+            <div class="col-4">
+                {% if type == 'pcb' %}
+                <button id="device_other" type="button" class="btn btn-secondary btn-block">PCB</button>
+                {% else %}
+                <button id="device_other" type="button" class="btn btn-outline-secondary btn-block">PCB</button>
+                {% endif %}
+                <script type="text/javascript">
+                    document.getElementById("device_other").onclick = function () {
+                        location.href = "{{ url_for( 'pcbs_get') }}";
+                    };
+                </script>
+            </div>
+        </div>
+
+        <div class="row container-fluid my-3">
+            <div class="accordion container-fluid" id="accordionCell">
+                <div class="card">
+                  <div class="card-header" id="headingCell">
+                    <h2 class="mb-0">
+                      <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseCell" aria-expanded="true" aria-controls="collapseCell">
+                        Display filters
+                      </button>
+                    </h2>
+                  </div>
+              
+                  <div id="collapseCell" class="collapse" aria-labelledby="headingCell" data-parent="#accordionCell">
+                    <div class="card-body">
+                        {{ wtf.quick_form(forms['filter'] , form_type="horizontal") }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+        </div>
+
+
+        <div class="row mt-5">
+            
+            
+            <div class="col-6">
+
+                
+
+                <h3> {{ type }} under use</h3>
+
+                
+                <div style = 'overflow-y:scroll;height:300px;'>
+                <table id="usedCell" class="table table-hover">
+                    <thead class="thead-light" >
+                      <tr>
+                        <th>{{ type }} id</th>
+                        <th>{{ type }} name</th>
+                        <th>model</th>
+                        {% if type != "pcb" %}
+                        <th>device</th>
+                        <th>channel</th>
+                        {% else %}
+                        <th>firmware</th>
+                        {% endif %}
+                        <th>user</th>
+                        <th>expected end date</th> 
+                      </tr>
+                    </thead>
+                    <tbody >
+                            {% for element in elements %}
+                                {% if element.under_use == True %}
+                                {% if type == 'cell' %}
+                                <tr class="clickable " onclick="window.location='/inventory/cell_details{{ element.id }}'">
+                                {% elif type == 'pack' %}
+                                <tr class="clickable " onclick="window.location='/inventory/pack_details{{ element.id }}'">
+                                {% elif type == 'pcb' %}
+                                <tr class="clickable " onclick="window.location='/inventory/pcb_details{{ element.id }}'">
+                                {% endif %}
+
+                            <td>{{ element.id }}</td>
+                            <td>{{ element.name }}</td>
+                            <td>{{ element.type }}</td>
+                            {% if type != "pcb" %}
+                            <td>{{ element.device }}</td>
+                            <td>{{ element.channel }}</td>
+                            {% else %}
+                            <th>{{element.firmware}}</th>
+                            {% endif %}
+                            <td>{{ element.user }}</td>
+                            <td>{{ element.end }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+            </div>
+            
+            <div class="col-6">
+                <h3> {{ type }} available and decomissioned </h3>
+
+                
+                <div style = 'overflow-y:scroll;height:300px;'>
+                <table id="usedCell" class="table table-hover">
+                    <thead class="thead-light" >
+                      <tr>
+                        <th>{{ type }} id</th>
+                        <th>{{ type }} name</th>
+                        <th>model</th>
+                        {% if type != "pcb" %}
+                        <th>device</th>
+                        <th>channel</th>
+                        {% else %}
+                        <th>firmware</th>
+                        {% endif %}
+                        <th>user</th>
+                        <th>last used</th> 
+                      </tr>
+                    </thead>
+                    <tbody >
+                            {% for element in elements %}
+                                {% if element.under_use == False %}
+                                {% if type == 'cell' %}
+                                <tr class="clickable " onclick="window.location='/inventory/cell_details{{ element.id }}'">
+                                {% elif type == 'pack' %}
+                                <tr class="clickable " onclick="window.location='/inventory/pack_details{{ element.id }}'">
+                                {% elif type == 'pcb' %}
+                                <tr class="clickable " onclick="window.location='/inventory/pcb_details{{ element.id }}'">
+                                {% endif %}
+
+                            <td>{{ element.id }}</td>
+                            <td>{{ element.name }}</td>
+                            <td>{{ element.type }}</td>
+                            {% if type != "pcb" %}
+                            <td>{{ element.device }}</td>
+                            <td>{{ element.channel }}</td>
+                            {% else %}
+                            <th>{{element.firmware}}</th>
+                            {% endif %}
+                            <td>{{ element.user }}</td>
+                            <td>{{ element.end }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+                
+            </div>
+
+        </div>
+
+        <div class="row mt-5">
+            {% if type == "cell" %}
+            <div class="col-6"><buton type="button" class="btn btn-outline-secondary btn-block" data-toggle="modal" data-target="#modalOne"> Register new cell type</button></div>
+            <div class="col-6"><button type="button" class="btn btn-outline-secondary btn-block" data-toggle="modal" data-target="#modalTwo"> Add new cells</button></div>
+            {% elif type == "pack" %}
+            <div class="col-6"><buton type="button" class="btn btn-outline-secondary btn-block" data-toggle="modal" data-target="#modalOne"> Assemble pack</button></div>
+            <div class="col-6"><button type="button" class="btn btn-outline-secondary btn-block" data-toggle="modal" data-target="#modalTwo"> Add new pack</button></div>
+            {% elif type == "pcb" %}
+            <div class="col-6"><buton type="button" class="btn btn-outline-secondary btn-block" data-toggle="modal" data-target="#modalOne">Register new PCB rev</button></div>
+            <div class="col-6"><button type="button" class="btn btn-outline-secondary btn-block" data-toggle="modal" data-target="#modalTwo"> Add new board</button></div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-1"></div>
+</div>
+
+
+
+
+
+
+
+<div class="modal fade" id="modalOne" tabindex="-1" role="dialog" aria-labelledby="modalOneLongTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalOneLongTitle">Register a {{type}} type</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="p-2 row justify-content-center pt-5 smooth-scroll">
+                    {{ wtf.quick_form(forms['type'] , form_type="vertical") }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalTwo" tabindex="-1" role="dialog" aria-labelledby="modalTwoLongTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTwoLongTitle">Register a new {{type}}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="p-2 row justify-content-center pt-5 smooth-scroll">
+                    {{ wtf.quick_form(forms['unit'] , form_type="vertical") }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

@@ -4,13 +4,38 @@
 
 {% block main %}
 <div class="row container-fluid mt-3">
-    <div class="col-1"></div>
-    <div class="col-10">
-        <h1>Cell management</h1>
 
+    <div class="col-1">
+        <div class=""row></div>
+    </div>
+    <div class="col-10">
+        <h1>Inventory</h1>
         <div class="row mt-5">
-            <div class="col-12">
+            
+            
+            <div class="col-6">
+
+                <div class="accordion" id="accordionCell">
+                    <div class="card">
+                      <div class="card-header" id="headingCell">
+                        <h2 class="mb-0">
+                          <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseCell" aria-expanded="true" aria-controls="collapseCell">
+                            Display filters for cells
+                          </button>
+                        </h2>
+                      </div>
+                  
+                      <div id="collapseCell" class="collapse" aria-labelledby="headingCell" data-parent="#accordionCell">
+                        <div class="card-body">
+                            {{ wtf.quick_form(forms['filterCells'] , form_type="horizontal") }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                 <h3>Cells under use</h3>
+
+                
                 <div style = 'overflow-y:scroll;height:300px;'>
                 <table id="usedCell" class="table table-hover">
                     <thead class="thead-light" >
@@ -19,6 +44,7 @@
                         <th>Cell name</th>
                         <th>Model</th>
                         <th>Device</th>
+                        <th>Channel</th>
                         <th>User</th>
                         <th>End date</th> 
                       </tr>
@@ -31,6 +57,7 @@
                             <td>{{ cell.name }}</td>
                             <td>{{ cell.type }}</td>
                             <td>{{ cell.device }}</td>
+                            <td>{{ cell.channel }}</td>
                             <td>{{ cell.user }}</td>
                             <td>{{ cell.end }}</td>
                             </tr>
@@ -41,44 +68,127 @@
                 </div>
             </div>
             
+            <div class="col-6">
+                
+                <div class="accordion" id="accordionPack">
+                    <div class="card">
+                      <div class="card-header" id="headingPack">
+                        <h2 class="mb-0">
+                          <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapsePack" aria-expanded="true" aria-controls="collapsePack">
+                            Display filters for packs
+                          </button>
+                        </h2>
+                      </div>
+                  
+                      <div id="collapsePack" class="collapse" aria-labelledby="headingPack" data-parent="#accordionPack">
+                        <div class="card-body">
+                            {{ wtf.quick_form(forms['filterPacks'] , form_type="horizontal") }}
+                        </div>
+                      </div>
+                    </div>                    
+                  </div>
+                
+                <h3>Pack under use</h3>
+                    
+                <div style = 'overflow-y:scroll;height:300px;'>
+                <table id="usedCell" class="table table-hover">
+                    <thead class="thead-light" >
+                      <tr>
+                        <th>Pack id</th>
+                        <th>Pack name</th>
+                        <th>Model</th>
+                        <th>Device</th>
+                        <th>Channel</th>
+                        <th>User</th>
+                        <th>End date</th> 
+                      </tr>
+                    </thead>
+                    <tbody >
+                            {% for pack in packs %}
+                            {% if pack.under_use == True %}
+                            <tr class="clickable " onclick="window.location='/pack_details{{ pack.id }}'">
+                            <td>{{ pack.id }}</td>
+                            <td>{{ pack.name }}</td>
+                            <td>{{ pack.type }}</td>
+                            <td>{{ pack.device }}</td>
+                            <td>{{ pack.channel }}</td>
+                            <td>{{ pack.user }}</td>
+                            <td>{{ pack.end }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+            </div>
 
         </div>
         <div class="row mt-5">
-            <div class="col-12">
+            <div class="col-6">
                 <h3>Cells available</h3>
-            <div style = 'overflow-y:scroll;height:300px;'>
-                <table id="freeCell" class="table table-hover">
-                    <thead class="thead-light" >
-                        <tr>
-                        <th>Cell id</th>
-                        <th>Cell name</th>
-                        <th>Model</th>
-                        <th>Last use</th>
-                        <th>Location</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                        {% for cell in cells %}
-                        {% if cell.under_use == False %}
-                        <tr class="clickable " onclick="window.location='/cell_details{{ cell.id }}'">
-                        <td>{{ cell.id }}</td>
-                        <td>{{ cell.name }}</td>
-                        <td>{{ cell.type }}</td>
-                        <td>{{ cell.end }}</td>
-                        <td>{{ cell.location }}</td>
+                <div style = 'overflow-y:scroll;height:300px;'>
+                    <table id="freeCell" class="table table-hover">
+                        <thead class="thead-light" >
+                            <tr>
+                            <th>Cell id</th>
+                            <th>Cell name</th>
+                            <th>Model</th>
+                            <th>Last use</th>
+                            <th>Location</th>
                         </tr>
-                        {% endif %}
-                        {% endfor %}
-                    </tbody>
-                  </table>
+                        </thead>
+                        <tbody>
+                            {% for cell in cells %}
+                            {% if cell.under_use == False %}
+                            <tr class="clickable " onclick="window.location='/cell_details{{ cell.id }}'">
+                            <td>{{ cell.id }}</td>
+                            <td>{{ cell.name }}</td>
+                            <td>{{ cell.type }}</td>
+                            <td>{{ cell.end }}</td>
+                            <td>{{ cell.location }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
+            <div class="col-6">
+                <h3>Packs available</h3>
+                <div style = 'overflow-y:scroll;height:300px;'>
+                    <table id="freeCell" class="table table-hover">
+                        <thead class="thead-light" >
+                            <tr>
+                            <th>Pack id</th>
+                            <th>Pack name</th>
+                            <th>Model</th>
+                            <th>Last use</th>
+                            <th>Location</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for pack in packs %}
+                            {% if pack.under_use == False %}
+                            <tr class="clickable " onclick="window.location='/pack_details{{ pack.id }}'">
+                            <td>{{ pack.id }}</td>
+                            <td>{{ pack.name }}</td>
+                            <td>{{ pack.type }}</td>
+                            <td>{{ pack.end }}</td>
+                            <td>{{ pack.location }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <div class="row mt-5">
             <div class="col-3"><buton type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalNewType"> Register new cell type</button></div>
-            <div class="col-3"></div>
             <div class="col-3"><button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalNewCell"> Add new cells</button></div>
+            <div class="col-3"><buton type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalNewPackMake"> Assemble pack</button></div>
+            <div class="col-3"><button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalNewPack"> Add new pack</button></div>
         </div>
     </div>
     <div class="col-1"></div>
@@ -120,6 +230,43 @@
             <div class="modal-body">
                 <div class="p-2 row justify-content-center pt-5 smooth-scroll">
                     {{ wtf.quick_form(forms['unit'] , form_type="vertical") }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNewPackMake" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Assemble new pack</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="p-2 row justify-content-center pt-5 smooth-scroll">
+                    {{ wtf.quick_form(forms['assemble'] , form_type="vertical") }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="modalNewPack" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Add a new commercial pack</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="p-2 row justify-content-center pt-5 smooth-scroll">
+                    {{ wtf.quick_form(forms['pack'] , form_type="vertical") }}
                 </div>
             </div>
         </div>
