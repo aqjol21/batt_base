@@ -48,39 +48,14 @@ def inject_floor():
 
 
 
-def gap_filling(A):
-        for _ in range(len(A)-1):
-            if (A[_+1]['start']-A[_]['end']).days <= 1: #continuous
-                pass
-            else:
-                sched={'state': True, 'start':A[_]['end']+timedelta(days=1), 'end': A[_+1]['start']-timedelta(days=1)}
-                A.insert(_+1, sched)
-                gap_filling(A)
-
-
-from fakeData import *
-
-
 '''___________________________________________________________________________________________________________________________________
                 Display functions
 
-    Contains
-    index()
-        displays the main home page
-    tests_list_get()
-        list of every tests ran, on going and schedules
-    cells_get()
-        list of every cells purchased
-    cell_details_get()
-        list of details available for a specific cell
-        parameters
-        ==========
-        id : int, id of the cell of which the details must be displayed
-    booking_get()
 ___________________________________________________________________________________________________________________________________'''
 
 
-# debug only
+############## debug only  ###############################################################################
+from fakeData import *
 tests_      = testTestlist()
 devices_    = deviceIndex()
 cells_      = cellList()
@@ -88,6 +63,8 @@ packs_      = cellList()
 schedules_  = scheduleList()
 channelList = []
 pcbs_       = pcbList()
+
+############## debug only  ###############################################################################
 
 #============INDEX===============================================
 @app.route('/')
@@ -121,7 +98,7 @@ def tests_list_post():
 
     return redirect(url_for(tests_list_get()))
 
-#============CELLS===============================================
+#============INVENTORY MANAGEMENT===============================================
 @app.route('/inventory/cells', methods=['GET'])
 # @login_required
 def cells_get():
@@ -194,8 +171,6 @@ def pcbs_post():
     forms = {'type':CellTypeForm(), 'unit':CellForm(), 'assemble':AssemblePackForm(), 'pack':PackForm(),'filter':FilterCellStockForm()}
 
     return redirect(url_for(cells_get()))
-
-
 
 @app.route('/inventory/cell_details<id>', methods=['GET'])
 # @login_required

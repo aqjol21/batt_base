@@ -94,32 +94,34 @@ def pcbList():
     }
     for i in range(20)]
     return(pcbs)
+
+def generateSchedule():
+    schedule = { 'booked' : bool(random.randint(0,1)),
+                'type'   : random.choice(test_types),
+                'user'   : random.choice(users),
+                'name'   : "a name later",
+                'start'    : datetime.datetime.today(),
+                'end'      : datetime.datetime.today()+datetime.timedelta(days=random.randint(0,5))
+            }
+    schedule['len'] = (schedule['end']-schedule['start']).days
+    return(schedule)
+            
+
 def scheduleList():
     schedules = [{  'name'     : devicesNames[i],
-                    'channels' : [ { 'booked' : bool(random.randint(0,1)),
-                                     'type'   : random.choice(test_types),
-                                     'user'   : random.choice(users),
-                                     'name'   : "a name later"
-                                    } for chan in range(channels[i]) ],
-                    'start'    : datetime.datetime.today(),
-                    'end'      : datetime.datetime.today()+datetime.timedelta(days=random.randint(0,5))
-                        
+                    'channels' : [ [ generateSchedule() for i in range(random.randint(1,3)) ] for chan in range(channels[i]) ]
                   }
                  for i in range(len(devicesNames)) ]
+    for device in schedules:
+        for channel in device['channels']:
+            for i in range(1, len(channel), -1):
+                if channel[i-1]['booked'] == False and channel[i]['booked'] ==channel[i+1]['booked']:
+                    channel[i-1]['len'] += channel[i]['len']
+                    del channel[i]
+            if channel[-1]['type'] == True:
+                channel[-1]['len'] = 70
+            else:
+                channel.append({ 'booked' : False,'len':70}) 
 
 
-    schedules.extend( [{  'name'     : devicesNames[i],
-                    'channels' : [ { 'booked' : bool(random.randint(0,1)),
-                                     'type'   : random.choice(test_types),
-                                     'user'   : random.choice(users),
-                                     'name'   : "a name later"
-                                    } for chan in range(channels[i]) ],
-                    'start'    : schedules[i]['start']+ datetime.timedelta(days=random.randint(0,5)),
-                    'end'      : schedules[i]['end']+datetime.timedelta(days=random.randint(5,8))
-                        
-                  }
-                 for i in range(len(devicesNames)) ] )
-
-
-  
     return(schedules)

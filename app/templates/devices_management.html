@@ -38,7 +38,7 @@
               <td class="bg-light" data-toggle="collapse" data-target="#collapse{{device['name']+'_'+str(c)+'_'+str(s)}}">{{ c }}</td>
               {% for s, schedule in enumerate(channel) %}
                 {% if schedule['booked'] == False %}
-                <td class="bg-success" colspan="{{ schedule['len'] }}" onclick= "window.location.href='{{ url_for( 'book_device' ,data = urlencode({ 'device':device['name'], 'channel':c })) }}';" style="cursor: pointer;" > Free  </td>
+                <td class="bg-success" colspan="{{ schedule['len'] }}" onclick= "window.location.href='{{ url_for( 'book_device_cells_get' ,data = urlencode({ 'device':device['name'], 'channel':c })) }}';" style="cursor: pointer;" > Free  </td>
                 {% elif s == 0%}
                 <td class="bg-danger" colspan="{{ schedule['len'] }}" data-toggle="collapse" data-target="#{{device['name']+'_'+str(c)+'_'+str(s)}}" style="cursor: pointer;"> {{ schedule['type'] }}
                   <div id="{{device['name']+'_'+str(c)+'_'+str(s)}}" class="collapse in">
