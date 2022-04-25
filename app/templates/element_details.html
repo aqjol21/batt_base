@@ -12,8 +12,8 @@
                 <table id="cell_details" class="table">
                     <tbody >
                         {% if type == 'cell'%}     <tr> <td>Purchase date:</td> 
-                        { % elif type == 'pack' %} <tr> <td>Purchase/assembly date:</td>
-                        { % elif type == 'pcb' %} <tr> <td>Manufacture date:</td> 
+                        {% elif type == 'pack' %} <tr> <td>Purchase/assembly date:</td>
+                        {% elif type == 'pcb' %} <tr> <td>Manufacture date:</td> 
                         {% endif %}   
                         <td>{{ element.purchase_date }}</td> </tr> 
                         {% if element.under_use == False %}

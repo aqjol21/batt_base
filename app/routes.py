@@ -123,13 +123,14 @@ def packs_get():
              'filter':FilterPackStockForm()}
 
     ##### DEBUG
-    forms['unit'].model.choices            = [ (i, cell_types[i]) for i in range(len (cell_types)) ]
-    forms['unit'].location.choices         = [ (i, locations[i])  for i in range(len (locations))  ]
-    forms['type'].cells.choices        = [ (i, cell_names[i]) for i in range(len (cell_names)) ]
-    forms['type'].location.choices     = [ (i, locations[i])  for i in range(len (locations))  ] 
-    forms['filter'].cell_type.choices      = [ (i, cell_types[i]) for i in range(len (cell_types)) ]
-    forms['filter'].name.choices           = [ (i, cell_names[i]) for i in range(len (cell_names)) ]
-    forms['filter'].user.choices           = [ (i, users[i])      for i in range(len (users))      ]
+    forms['unit'].model.choices            = [ (i, cell_types[i])    for i in range(len (cell_types)) ]
+    forms['unit'].location.choices         = [ (i, locations[i])     for i in range(len (locations))  ]
+    forms['type'].cells.choices            = [ (i, cell_names[i])    for i in range(len (cell_names)) ]
+    forms['type'].location.choices         = [ (i, locations[i])     for i in range(len (locations))  ] 
+    forms['type'].cms.choices              = [ (i, pcbs_[i]['name']) for i in range(len (pcbs_))      ] 
+    forms['filter'].cell_type.choices      = [ (i, cell_types[i])    for i in range(len (cell_types)) ]
+    forms['filter'].name.choices           = [ (i, cell_names[i])    for i in range(len (cell_names)) ]
+    forms['filter'].user.choices           = [ (i, users[i])         for i in range(len (users))      ]
 
 
     return render_template('inventory.html',forms=forms, elements=packs_, type= "pack")

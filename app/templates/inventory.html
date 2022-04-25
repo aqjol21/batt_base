@@ -38,9 +38,9 @@
             </div>
             <div class="col-4">
                 {% if type == 'pcb' %}
-                <button id="device_other" type="button" class="btn btn-secondary btn-block">PCB</button>
+                <button id="device_other" type="button" class="btn btn-secondary btn-block">CMS</button>
                 {% else %}
-                <button id="device_other" type="button" class="btn btn-outline-secondary btn-block">PCB</button>
+                <button id="device_other" type="button" class="btn btn-outline-secondary btn-block">CMS</button>
                 {% endif %}
                 <script type="text/javascript">
                     document.getElementById("device_other").onclick = function () {
@@ -190,7 +190,7 @@
             <div class="col-6"><buton type="button" class="btn btn-outline-secondary btn-block" data-toggle="modal" data-target="#modalOne"> Assemble pack</button></div>
             <div class="col-6"><button type="button" class="btn btn-outline-secondary btn-block" data-toggle="modal" data-target="#modalTwo"> Add new pack</button></div>
             {% elif type == "pcb" %}
-            <div class="col-6"><buton type="button" class="btn btn-outline-secondary btn-block" data-toggle="modal" data-target="#modalOne">Register new PCB rev</button></div>
+            <div class="col-6"><buton type="button" class="btn btn-outline-secondary btn-block" data-toggle="modal" data-target="#modalOne">Register new CMS rev</button></div>
             <div class="col-6"><button type="button" class="btn btn-outline-secondary btn-block" data-toggle="modal" data-target="#modalTwo"> Add new board</button></div>
             {% endif %}
         </div>

@@ -96,6 +96,7 @@ class AssemblePackForm(FlaskForm):
     purchase_date = DateField("Assemble date",validators=[DataRequired()])
     cells         = SelectMultipleField("Cells", coerce=int, validators=[DataRequired()])
     id            = IntegerField("pack id (from sticker)")
+    cms           = SelectField("CMS used for the pack", coerce=int, validators=[DataRequired()])
     location      = SelectField("Storage location", coerce=int, validators=[DataRequired()])
     submit        = SubmitField('Assemble pack')
 
@@ -127,8 +128,9 @@ class CellTypeForm(FlaskForm):
 class CellForm(FlaskForm):
     name          = StringField('Name')
     model         = SelectField("cell model", coerce=int, validators=[DataRequired()])
-    purchase_date = DateField("Purchase date",validators=[DataRequired()])
-    id            = IntegerField("Cell id (from sticker)")
+    purchase_date = DateField("Purchase/manufacture date",validators=[DataRequired()])
+    in_house      = BooleanField("In-house made cell?")
+    mother_cell   = IntegerField("If coin cell, mother cell id (from sticker), if not cell id (from sticker)")
     location      = SelectField("Storage location", coerce=int, validators=[DataRequired()])
     submit        = SubmitField('Add cell')
 
@@ -151,7 +153,7 @@ class addPCBModelForm(FlaskForm):
 
 class addPCBBoardForm(FlaskForm):
     name          = StringField('Name')
-    model         = SelectField("pcb model", coerce=int, validators=[DataRequired()])
+    model         = SelectField("CMS model", coerce=int, validators=[DataRequired()])
     purchase_date = DateField("Manufacture date",validators=[DataRequired()])
     id            = IntegerField("Board id (from sticker)")
     location      = SelectField("Storage location", coerce=int, validators=[DataRequired()])
